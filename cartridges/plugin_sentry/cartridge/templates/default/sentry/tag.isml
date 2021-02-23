@@ -1,0 +1,12 @@
+<isscript>
+    var assets = require('*/cartridge/scripts/assets.js');
+    assets.addJs('/js/sentry.js');
+</isscript>
+
+<!--[if gt IE 9]><!-->
+<script defer type="text/javascript" src="${URLUtils.staticURL('/js/sentry.js')}"></script>
+<!--<![endif]-->
+
+<meta name="sentry-dsn" content="${pdict.DSN}" />
+<meta name="sentry-version" content="${pdict.codeVersion}" />
+<meta name="sentry-instance" content="${dw.system.System.getInstanceType()}" />

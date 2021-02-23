@@ -1,0 +1,4 @@
+dw.json
+.idea/
+node_modules/
+!cartridges/plugin_filternavigation/**/static/**/js

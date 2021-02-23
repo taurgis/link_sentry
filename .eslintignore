@@ -1,0 +1,5 @@
+cartridges/plugin_gtm/cartridge/static/
+coverage/
+doc/
+bin/
+codecept.conf.js

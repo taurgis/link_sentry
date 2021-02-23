@@ -1,0 +1,8 @@
+{
+    "caches": [
+        {
+            "id": "sentryConfig",
+            "expireAfterSeconds": 3600
+        }
+    ]
+}

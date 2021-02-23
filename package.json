@@ -1,0 +1,54 @@
+{
+  "name": "plugin_sentry",
+  "version": "5.3.0",
+  "description": "Track SFRA client side exceptions to Sentry, and log server side exceptions optionally.",
+  "main": "index.js",
+  "scripts": {
+    "test": "sgmf-scripts --test test/unit/**/*.js",
+    "lint": "sgmf-scripts --lint js && sgmf-scripts --lint css",
+    "upload": "sgmf-scripts --upload -- ",
+    "uploadCartridge": "sgmf-scripts --uploadCartridge lib_sentry && sgmf-scripts --uploadCartridge plugin_sentry",
+    "compile:js": "sgmf-scripts --compile js",
+    "build": "npm run compile:js",
+    "watch": "sgmf-scripts --watch"
+  },
+  "author": {
+    "email": "thomas.theunen@forward.eu",
+    "name": "Thomas Theunen",
+    "url": "https://www.thomastheunen.eu"
+  },
+  "devDependencies": {
+    "chai": "^4.3.0",
+    "chai-subset": "^1.6.0",
+    "css-loader": "^0.28.11",
+    "dw-api-mock": "git+https://bitbucket.org/theunth/dw-api-mock.git",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^5.0.3",
+    "eslint-plugin-import": "^1.16.0",
+    "eslint-plugin-sitegenesis": "~1.0.0",
+    "husky": "^4.2.5",
+    "mocha": "^8.3.0",
+    "proxyquire": "1.7.4",
+    "request-promise": "^4.2.4",
+    "sass-loader": "^7.3.1",
+    "sgmf-scripts": "^2.4.1",
+    "sinon": "^9.2.4"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "ie >= 10"
+  ],
+  "paths": {
+    "base": "../storefront-reference-architecture/cartridges/app_storefront_base/"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint",
+      "pre-push": "npm run test"
+    }
+  },
+  "dependencies": {
+    "@sentry/browser": "^6.2.0",
+    "@sentry/tracing": "^6.2.0"
+  }
+}
