@@ -30,7 +30,7 @@ server.prepend('ErrorCode', logError);
 /**
  * Logs forbidden access requests to Sentry. If a user is logged in, the customer number is logged.
  */
-server.prepend('Forbidden', function(req, res, next) {
+server.prepend('Forbidden', function (req, res, next) {
     var SentryException = require('*/cartridge/models/sentryException');
     var { logException } = require('*/cartridge/scripts/helpers/sentryHelper');
 

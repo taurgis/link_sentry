@@ -1,5 +1,6 @@
-cartridges/plugin_gtm/cartridge/static/
+cartridges/plugin_sentry/cartridge/static/
 coverage/
 doc/
 bin/
 codecept.conf.js
+node_modules/

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "sgmf-scripts --test test/unit/**/*.js",
-    "lint": "sgmf-scripts --lint js && sgmf-scripts --lint css",
+    "lint": "sgmf-scripts --lint js",
     "upload": "sgmf-scripts --upload -- ",
     "uploadCartridge": "sgmf-scripts --uploadCartridge lib_sentry && sgmf-scripts --uploadCartridge plugin_sentry && sgmf-scripts --uploadCartridge plugin_sentry_test",
     "compile:js": "sgmf-scripts --compile js",
