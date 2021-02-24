@@ -1,7 +1,12 @@
 'use strict';
 const { init } = require('@sentry/browser');
 
-function determineInstanceType () {
+/**
+ * Determine the instance type of the current Salesforce Commerce Cloud B2C environment.
+ *
+ * @return {string|*} The instance type as a string
+ */
+function determineInstanceType() {
     const instanceCode = $('meta[name=sentry-instance]').attr('content');
     const instanceMapping = {
         0: 'development',

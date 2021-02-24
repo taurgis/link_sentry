@@ -5,30 +5,36 @@
   "main": "index.js",
   "scripts": {
     "test": "sgmf-scripts --test test/unit/**/*.js",
-    "lint": "sgmf-scripts --lint js",
+    "lint": "sgmf-scripts --lint js && ./node_modules/.bin/isml-linter",
+    "lint:isml": "./node_modules/.bin/isml-linter",
     "upload": "sgmf-scripts --upload -- ",
-    "uploadCartridge": "sgmf-scripts --uploadCartridge lib_sentry && sgmf-scripts --uploadCartridge plugin_sentry && sgmf-scripts --uploadCartridge plugin_sentry_test",
+    "uploadCartridge": "sgmf-scripts --uploadCartridge lib_sentry && sgmf-scripts --uploadCartridge plugin_sentry",
     "compile:js": "sgmf-scripts --compile js",
     "build": "npm run compile:js",
     "watch": "sgmf-scripts --watch"
   },
+  "repository": {
+    "url": "https://github.com/taurgis/link_sentry"
+  },
+  "license": "MIT License",
   "author": {
     "email": "thomas.theunen@forward.eu",
     "name": "Thomas Theunen",
     "url": "https://www.thomastheunen.eu"
   },
   "devDependencies": {
+    "app-module-path": "^2.2.0",
     "chai": "^4.3.0",
     "chai-subset": "^1.6.0",
     "css-loader": "^0.28.11",
-    "dw-api-mock": "git+https://bitbucket.org/theunth/dw-api-mock.git",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^5.0.3",
     "eslint-plugin-import": "^1.16.0",
     "eslint-plugin-sitegenesis": "~1.0.0",
     "husky": "^4.2.5",
+    "isml-linter": "^5.30.3",
     "mocha": "^8.3.0",
-    "proxyquire": "1.7.4",
+    "proxyquire": "1.7.11",
     "request-promise": "^4.2.4",
     "sass-loader": "^7.3.1",
     "sgmf-scripts": "^2.4.1",

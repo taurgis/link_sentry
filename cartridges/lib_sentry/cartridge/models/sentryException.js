@@ -16,12 +16,16 @@ var ENVIRONMENT_MAPPING = {
  * The model representing a Sentry Exception to be posted to the Sentry API.
  *
  * @param {string} level - The error severity.
- * @param {string} stackTrace - The exception
+ * @param {string} message - The exception
  * @param {string} type - The error type
  *
  * @constructor
  */
-function SentryException(level, stackTrace, type) {
+function SentryException(level, message, type) {
+    if (!message) {
+        return;
+    }
+
     var { getInstanceType } = require('dw/system/System');
     var { createUUID } = require('dw/util/UUIDUtils');
     var { getProjectName } = require('*/cartridge/scripts/helpers/sentryHelper');
@@ -37,12 +41,14 @@ function SentryException(level, stackTrace, type) {
 
     if (level && VALID_LEVELS.indexOf(level) >= 0) {
         this.level = level;
+    } else {
+        this.level = SentryException.LEVEL_FATAL;
     }
 
     this.exception = {
         values: [{
             type: type,
-            value: stackTrace
+            value: message
         }]
     };
 }

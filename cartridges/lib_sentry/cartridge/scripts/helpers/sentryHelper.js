@@ -8,7 +8,7 @@ var PROJECT_NAME_PREFERENCE = 'sentryProjectID';
  * Gets the Public Key (DSN) URL from the Site Preference. First try to fetch it from
  * the cache, if it is not in there get it from the preference and store it.
  *
- * @return {string} - The DSN URL
+ * @return {string|Object} - The DSN URL
  */
 function getDSN() {
     var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
@@ -18,7 +18,7 @@ function getDSN() {
     return configCache.get('DSN', function () {
         var currentSite = require('dw/system/Site').getCurrent();
 
-        Logger.debug('Sentry :: Fetching DSN from the Site Preference.')
+        Logger.debug('Sentry :: Fetching DSN from the Site Preference.');
 
         return currentSite.getCustomPreferenceValue(DSN_PREFERENCE);
     });
@@ -28,7 +28,7 @@ function getDSN() {
  * Gets the project ID for Sentry. First try to fetch it from
  * the cache, if it is not in there get it from the preference and store it.
  *
- * @return {string} - The project ID
+ * @return {string|Object} - The project ID
  */
 function getProjectName() {
     var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
@@ -38,7 +38,7 @@ function getProjectName() {
     return configCache.get('projectName', function () {
         var currentSite = require('dw/system/Site').getCurrent();
 
-        Logger.debug('Sentry :: Fetching Project Name from the Site Preference.')
+        Logger.debug('Sentry :: Fetching Project Name from the Site Preference.');
 
         return currentSite.getCustomPreferenceValue(PROJECT_NAME_PREFERENCE);
     });
