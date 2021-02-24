@@ -13,6 +13,10 @@
     "build": "npm run compile:js",
     "watch": "sgmf-scripts --watch"
   },
+  "repository": {
+    "url": "https://github.com/taurgis/link_sentry"
+  },
+  "license": "MIT License",
   "author": {
     "email": "thomas.theunen@forward.eu",
     "name": "Thomas Theunen",
