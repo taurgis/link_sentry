@@ -1,4 +1,5 @@
 'use strict';
+
 const { init } = require('@sentry/browser');
 
 /**
@@ -13,7 +14,6 @@ function determineInstanceType() {
         1: 'staging',
         2: 'production'
     };
-
 
     if (instanceCode) {
         return instanceMapping[instanceCode];
