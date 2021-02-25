@@ -1,5 +1,7 @@
 'use strict';
 
+var { map, forEach } = require('*/cartridge/scripts/util/collections');
+
 var VALID_LEVELS = ['fatal',
     'error',
     'warning',
@@ -11,6 +13,97 @@ var ENVIRONMENT_MAPPING = {
     1: 'staging',
     2: 'production'
 };
+
+/**
+ * Gets the request information to send to Sentry.
+ *
+ * @return {{headers: Object, method: string, env: {REMOTE_ADDR: string}, url: string, query_string: string, cookies: string}} - The request information
+ */
+function getRequestPayload() {
+    var headers = {};
+    var cookies = '';
+
+    // eslint-disable-next-line no-plusplus
+    for (var i = 0; i < request.httpCookies.cookieCount; i++) {
+        var currentCookie = request.httpCookies[i];
+
+        cookies += currentCookie.name + '=' + currentCookie.value + '; ';
+    }
+
+    var requestPayload = {
+        method: request.httpMethod,
+        url: request.httpURL.toString(),
+        query_string: request.httpQueryString,
+        cookies: cookies,
+        env: {
+            REMOTE_ADDR: request.httpRemoteAddress
+        },
+        headers: headers
+    };
+
+    forEach(request.httpHeaders.keySet(), function (httpHeader) {
+        headers[httpHeader] = request.httpHeaders.get(httpHeader);
+    });
+
+    return requestPayload;
+}
+
+/**
+ * Gets the user information to send to Sentry.
+ *
+ * @return {{customer_groups: *, ip_address: string}} - The user information
+ */
+function getCustomerPayload() {
+    var customer = request.session.customer;
+
+    var user = {
+        ip_address: request.httpRemoteAddress,
+        customer_groups: map(customer.customerGroups, function (customerGroup) {
+            return customerGroup.ID;
+        })
+            .join(', ')
+    };
+
+    if (customer.authenticated) {
+        var profile = customer.profile;
+
+        if (profile) {
+            user.id = profile.customerNo;
+        }
+    }
+
+    return user;
+}
+
+/**
+ * Gets the user click stream to send to Sentry.
+ *
+ * @return {{values: []}} - The breadcrumb path
+ */
+function getBreadcrumbsPayload() {
+    var clickStream = request.session.clickStream;
+    var values = [];
+
+    if (clickStream.enabled) {
+        var previousClick;
+        forEach(clickStream.clicks, function (click) {
+            values.push({
+                timestamp: click.timestamp,
+                type: 'navigation',
+                data: {
+                    from: previousClick ? previousClick.url : null,
+                    to: click.url
+                }
+            });
+
+            previousClick = click;
+        });
+    }
+
+    return {
+        values: values
+    };
+}
 
 /**
  * The model representing a Sentry Exception to be posted to the Sentry API.
@@ -32,7 +125,6 @@ function SentryEvent(data) {
 
     var { getInstanceType } = require('dw/system/System');
     var { createUUID } = require('dw/util/UUIDUtils');
-    var { map, forEach } = require('*/cartridge/scripts/util/collections');
 
     this.event_id = (createUUID() + createUUID()).substring(0, 32).toLowerCase();
     this.timestamp = Math.round(Date.now() / 1000);
@@ -61,49 +153,9 @@ function SentryEvent(data) {
         };
     }
 
-    var customer = request.session.customer;
-
-    this.user = {
-        ip_address: request.httpRemoteAddress,
-        customer_groups: map(customer.customerGroups, function (customerGroup) {
-            return customerGroup.ID;
-        }).join(', ')
-    };
-
-    if (customer.authenticated) {
-        var profile = customer.profile;
-
-        if (profile) {
-            this.user.id = profile.customerNo;
-        }
-    }
-
-    var headers = {};
-    var cookies = '';
-
-    // eslint-disable-next-line no-plusplus
-    for (var i = 0; i < request.httpCookies.cookieCount; i++) {
-        var currentCookie = request.httpCookies[i];
-
-        cookies += currentCookie.name + '=' + currentCookie.value + '; ';
-    }
-
-    this.request = {
-        method: request.httpMethod,
-        url: request.httpURL.toString(),
-        query_string: request.httpQueryString,
-        cookies: cookies,
-        env: {
-            REMOTE_ADDR: request.httpRemoteAddress
-        },
-        headers: headers
-    };
-
-
-
-    forEach(request.httpHeaders.keySet(), function (httpHeader) {
-        headers[httpHeader] = request.httpHeaders.get(httpHeader);
-    });
+    this.user = getCustomerPayload();
+    this.request = getRequestPayload();
+    this.breadcrumbs = getBreadcrumbsPayload();
 }
 
 SentryEvent.LEVEL_FATAL = 'fatal';
