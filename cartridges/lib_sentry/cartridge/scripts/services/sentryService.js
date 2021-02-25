@@ -6,20 +6,19 @@ var DSN_REGEX = 'https://(.+)@.+/(.+)';
  * Creates the service to add a new Sentry event.
  *
  * @param {Object} sentryException - The exception to post to Sentry
- *
+ * @param {string} dsn - The DSN to call
  * @return {dw.svc.Service} - The service
  */
-function sentryEvent(sentryException) {
+function sentryEvent(sentryException, dsn) {
     var { createService } = require('dw/svc/LocalServiceRegistry');
-    var { getDSN } = require('*/cartridge/scripts/helpers/sentryHelper');
     var sentryConfig = require('*/cartridge/config/sentry');
 
     return createService('Sentry', {
         createRequest: function (svc) {
-            var splitDSN = getDSN().match(DSN_REGEX);
+            var splitDSN = dsn.match(DSN_REGEX);
             var key = splitDSN[1];
             var projectID = splitDSN[2];
-            var url = getDSN().replace(projectID, '') + 'api/' + projectID + '/store/';
+            var url = dsn.replace(projectID, '') + 'api/' + projectID + '/store/';
 
             svc.addHeader('X-Sentry-Auth', 'Sentry sentry_version=7,sentry_key= '
                 + key + ',sentry_client=' + sentryConfig['sentry-client'].name + '/' + sentryConfig['sentry-client'].version
@@ -32,10 +31,10 @@ function sentryEvent(sentryException) {
         },
         parseResponse: function (svc, client) {
             if (client.statusCode === 200) {
-                return true;
+                return JSON.parse(client.text).id;
             }
 
-            return false;
+            return null;
         },
         mockCall: function () {
             return JSON.stringify({

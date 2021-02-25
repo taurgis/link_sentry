@@ -46,22 +46,28 @@ function getProjectName() {
 
 /**
  * Logs an exception in sentry
- * @param {string} message - The log message you want to appear in Sentry (e.g. Stacktrace)
- * @param {string} severity - The severity of the error
- * @param  {string} type - The type of error
+ * @param {Object} sentryEvent - The Sentry Event to send
+ * @param {string} dsn - The DSN to use
+ *
+ * @returns {string|null} - The Sentry Event ID
  */
-function logException(message, severity, type) {
-    if (!empty(message)) {
-        var SentryException = require('*/cartridge/models/sentryException');
+function sendEvent(sentryEvent, dsn) {
+    if (!empty(sentryEvent)) {
         var sentryService = require('*/cartridge/scripts/services/sentryService');
-        var sentryException = new SentryException(severity, message, type);
+        var result = sentryService.sentryEvent(sentryEvent, dsn).call();
 
-        sentryService.sentryEvent(sentryException).call();
+        if (!result.error) {
+            return result.object;
+        }
+
+        return result.errorMessage;
     }
+
+    return null;
 }
 
 module.exports = {
     getDSN: getDSN,
     getProjectName: getProjectName,
-    logException: logException
+    sendEvent: sendEvent
 };

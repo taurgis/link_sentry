@@ -5,26 +5,16 @@ const proxyQuire = require('proxyquire').noCallThru();
 
 require('app-module-path').addPath(process.cwd() + '/cartridges');
 
-const SentryException = proxyQuire('lib_sentry/cartridge/models/sentryException', {
+const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
     'dw/system/System': {
         getInstanceType: () => 0
     },
     'dw/util/UUIDUtils': {
         createUUID: () => 'xxxxxxxxxxxxxXxxxxxxxxxxxx'
-    },
-    '*/cartridge/scripts/helpers/sentryHelper': {
-        getProjectName: () => 'projectid'
-    },
-    '*/cartridge/config/sentry': {
-        'code-version': '5.3.0',
-        'sentry-client': {
-            name: 'SFRA',
-            version: '5.3.0'
-        }
     }
 });
 
-describe('Model - Sentry Exception', () => {
+describe('Model - Sentry Event', () => {
     before(() => {
         global.request = {
             httpPath: 'httpPath',
@@ -33,72 +23,106 @@ describe('Model - Sentry Exception', () => {
     });
 
     it('Should create an empty object if no message is passed', () => {
-        const result = new SentryException(null, null, null);
+        const result = new SentryEvent();
 
         expect(result).to.be.empty;
     });
 
     it('Should contain an automatic generated UUID', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1'
+        });
 
         expect(result.event_id).to.equal('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     });
 
     it('Should contain an automatic generated timestamp representing the time now', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1'
+        });
 
-        expect(result.timestamp).to.equal(Date.now() / 1000);
+        expect(result.timestamp).to.equal(Math.round(Date.now() / 1000));
     });
 
     it('Should contain the platform with the value "javascript"', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1'
+        });
 
         expect(result.platform).to.equal('javascript');
     });
 
     it('Should contain the current request URL on which the exception is created', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1'
+        });
 
         expect(result.transaction).to.equal(request.httpPath);
     });
 
     it('Should contain the current request host on which the exception is created', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1'
+        });
 
         expect(result.server_name).to.equal(request.httpHost);
     });
 
     it('Should contain the release version based on the Sentry config file', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const projectId = 'project@version1';
+        const result = new SentryEvent({
+            message: 'My message',
+            release: projectId
+        });
 
-        expect(result.release).to.equal('projectid@5.3.0');
+        expect(result.release).to.equal(projectId);
     });
 
     it('Should contain the current environment', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1'
+        });
 
         expect(result.environment).to.equal('development');
     });
 
     it('Should mark the error as fatal if no level is passed', () => {
-        const result = new SentryException(null, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1'
+        });
 
-        expect(result.level).to.equal(SentryException.LEVEL_FATAL);
+        expect(result.level).to.equal(SentryEvent.LEVEL_FATAL);
     });
 
     it('Should set the correct error level', () => {
-        const result = new SentryException(SentryException.LEVEL_INFO, 'My message', SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: 'My message',
+            release: 'project@version1',
+            level: SentryEvent.LEVEL_INFO
+        });
 
-        expect(result.level).to.equal(SentryException.LEVEL_INFO);
+        expect(result.level).to.equal(SentryEvent.LEVEL_INFO);
     });
 
     it('Should set the exception based on the passed parameters', () => {
         const message = 'My message';
-        const result = new SentryException(SentryException.LEVEL_INFO, message, SentryException.TYPE_UNKNOWN);
+        const result = new SentryEvent({
+            message: message,
+            release: 'project@version1',
+            type: SentryEvent.ERROR_TYPE_UNKNOWN,
+            eventType: SentryEvent.TYPE_EXCEPTION
+        });
 
         expect(result.exception).to.deep.equal({
             values: [{
-                type: SentryException.TYPE_UNKNOWN,
+                type: SentryEvent.ERROR_TYPE_UNKNOWN,
                 value: message
             }]
         });
