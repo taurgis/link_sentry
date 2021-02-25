@@ -11,6 +11,9 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
     },
     'dw/util/UUIDUtils': {
         createUUID: () => 'xxxxxxxxxxxxxXxxxxxxxxxxxx'
+    },
+    '*/cartridge/scripts/util/collections': {
+        forEach: () => []
     }
 });
 
@@ -18,7 +21,8 @@ describe('Model - Sentry Event', () => {
     before(() => {
         global.request = {
             httpPath: 'httpPath',
-            httpHost: 'httpHost'
+            httpHost: 'httpHost',
+            httpURL: 'httpURL'
         };
     });
 

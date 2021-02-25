@@ -17,17 +17,23 @@ var ENVIRONMENT_MAPPING = {
 /**
  * Gets the request information to send to Sentry.
  *
- * @return {{headers: Object, method: string, env: {REMOTE_ADDR: string}, url: string, query_string: string, cookies: string}} - The request information
+ * @return {{headers: Object, method: string, env: {REMOTE_ADDR: string}, url: string, query_string: string, cookies: string}|null} - The request information
  */
 function getRequestPayload() {
+    if (!request) {
+        return null;
+    }
+
     var headers = {};
     var cookies = '';
 
-    // eslint-disable-next-line no-plusplus
-    for (var i = 0; i < request.httpCookies.cookieCount; i++) {
-        var currentCookie = request.httpCookies[i];
+    if (request.httpCookies) {
+        // eslint-disable-next-line no-plusplus
+        for (var i = 0; i < request.httpCookies.cookieCount; i++) {
+            var currentCookie = request.httpCookies[i];
 
-        cookies += currentCookie.name + '=' + currentCookie.value + '; ';
+            cookies += currentCookie.name + '=' + currentCookie.value + '; ';
+        }
     }
 
     var requestPayload = {
@@ -41,9 +47,11 @@ function getRequestPayload() {
         headers: headers
     };
 
-    forEach(request.httpHeaders.keySet(), function (httpHeader) {
-        headers[httpHeader] = request.httpHeaders.get(httpHeader);
-    });
+    if (request.httpHeaders) {
+        forEach(request.httpHeaders.keySet(), function (httpHeader) {
+            headers[httpHeader] = request.httpHeaders.get(httpHeader);
+        });
+    }
 
     return requestPayload;
 }
@@ -54,14 +62,17 @@ function getRequestPayload() {
  * @return {{customer_groups: *, ip_address: string}} - The user information
  */
 function getCustomerPayload() {
+    if (!request || !request.session) {
+        return null;
+    }
+
     var customer = request.session.customer;
 
     var user = {
         ip_address: request.httpRemoteAddress,
         customer_groups: map(customer.customerGroups, function (customerGroup) {
             return customerGroup.ID;
-        })
-            .join(', ')
+        }).join(', ')
     };
 
     if (customer.authenticated) {
@@ -78,17 +89,22 @@ function getCustomerPayload() {
 /**
  * Gets the user click stream to send to Sentry.
  *
- * @return {{values: []}} - The breadcrumb path
+ * @return {{values: []}|null} - The breadcrumb path
  */
 function getBreadcrumbsPayload() {
+    if (!request || !request.session) {
+        return null;
+    }
+
     var clickStream = request.session.clickStream;
     var values = [];
 
     if (clickStream.enabled) {
         var previousClick;
+
         forEach(clickStream.clicks, function (click) {
             values.push({
-                timestamp: click.timestamp,
+                timestamp: Math.round(click.timestamp / 1000),
                 type: 'navigation',
                 data: {
                     from: previousClick ? previousClick.url : null,
