@@ -32,6 +32,7 @@ function SentryEvent(data) {
 
     var { getInstanceType } = require('dw/system/System');
     var { createUUID } = require('dw/util/UUIDUtils');
+    var { map, forEach } = require('*/cartridge/scripts/util/collections');
 
     this.event_id = (createUUID() + createUUID()).substring(0, 32).toLowerCase();
     this.timestamp = Math.round(Date.now() / 1000);
@@ -59,6 +60,50 @@ function SentryEvent(data) {
             message: data.message
         };
     }
+
+    var customer = request.session.customer;
+
+    this.user = {
+        ip_address: request.httpRemoteAddress,
+        customer_groups: map(customer.customerGroups, function (customerGroup) {
+            return customerGroup.ID;
+        }).join(', ')
+    };
+
+    if (customer.authenticated) {
+        var profile = customer.profile;
+
+        if (profile) {
+            this.user.id = profile.customerNo;
+        }
+    }
+
+    var headers = {};
+    var cookies = '';
+
+    // eslint-disable-next-line no-plusplus
+    for (var i = 0; i < request.httpCookies.cookieCount; i++) {
+        var currentCookie = request.httpCookies[i];
+
+        cookies += currentCookie.name + '=' + currentCookie.value + '; ';
+    }
+
+    this.request = {
+        method: request.httpMethod,
+        url: request.httpURL.toString(),
+        query_string: request.httpQueryString,
+        cookies: cookies,
+        env: {
+            REMOTE_ADDR: request.httpRemoteAddress
+        },
+        headers: headers
+    };
+
+
+
+    forEach(request.httpHeaders.keySet(), function (httpHeader) {
+        headers[httpHeader] = request.httpHeaders.get(httpHeader);
+    });
 }
 
 SentryEvent.LEVEL_FATAL = 'fatal';
