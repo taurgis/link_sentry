@@ -13,7 +13,9 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
         createUUID: () => 'xxxxxxxxxxxxxXxxxxxxxxxxxx'
     },
     '*/cartridge/scripts/util/collections': {
-        forEach: () => []
+        forEach: (collection, callback) => {
+            collection.forEach(callback);
+        }
     }
 });
 
@@ -22,12 +24,48 @@ describe('Model - Sentry Event', () => {
         global.request = {
             httpPath: 'httpPath',
             httpHost: 'httpHost',
-            httpURL: 'httpURL'
+            httpMethod: 'POST',
+            httpQueryString: 'test=value',
+            httpRemoteAddress: '127.0.0°.1',
+            httpHeaders: {
+                keySet: () => ['header1', 'header2'],
+                values: {
+                    header1: 'headervalue1',
+                    header2: 'headervalue2'
+                },
+                get: (key) => request.httpHeaders.values[key]
+            },
+            httpURL: 'httpURL',
+            httpCookies: [{
+                name: 'cookie1',
+                value: 'value1'
+            }, {
+                name: 'cookie2',
+                value: 'value2'
+            }]
         };
+
+        global.request.httpCookies.cookieCount = 2;
+    });
+
+    it('Should create an empty object if no parameter is passed', () => {
+        const result = new SentryEvent();
+
+        expect(result).to.be.empty;
     });
 
     it('Should create an empty object if no message is passed', () => {
-        const result = new SentryEvent();
+        const result = new SentryEvent({
+            release: 'project@version1'
+        });
+
+        expect(result).to.be.empty;
+    });
+
+    it('Should create an empty object if no release is passed', () => {
+        const result = new SentryEvent({
+            message: 'My message'
+        });
 
         expect(result).to.be.empty;
     });
@@ -129,6 +167,73 @@ describe('Model - Sentry Event', () => {
                 type: SentryEvent.ERROR_TYPE_UNKNOWN,
                 value: message
             }]
+        });
+    });
+
+    describe('Model - Sentry Event - Request', () => {
+        it('Should set the correct request method', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.request.method).to.equal(request.httpMethod);
+        });
+
+        it('Should set the correct request URL', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.request.url).to.equal(request.httpURL);
+        });
+
+        it('Should set the correct request query string', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.request.query_string).to.equal(request.httpQueryString);
+        });
+
+        it('Should set the correct request cookies', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.request.cookies).to.equal(
+                request.httpCookies.map((cookie) => cookie.name + '=' + cookie.value).join('; ') + '; '
+            );
+        });
+
+        it('Should set the correct request environment', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.request.env.REMOTE_ADDR).to.equal(request.httpRemoteAddress);
+        });
+
+        it('Should set the correct request headers', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.request.headers).to.deep.equal({
+                header1: 'headervalue1',
+                header2: 'headervalue2'
+            });
         });
     });
 });

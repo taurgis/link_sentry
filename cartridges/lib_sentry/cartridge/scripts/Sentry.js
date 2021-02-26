@@ -5,7 +5,7 @@ var { getDSN, getProjectName, sendEvent } = require('*/cartridge/scripts/helpers
 var SentryConfig = require('*/cartridge/config/sentry');
 
 /**
- * The Sentry Node SDK Client.
+ * The Sentry SFCC SDK Client.
  *
  * To use this SDK, call the {@link init} function as early as possible in the
  * main entry module. To set context information or send manual events, use the
