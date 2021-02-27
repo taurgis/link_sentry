@@ -1,7 +1,5 @@
 'use strict';
 
-var { forEach } = require('*/cartridge/scripts/util/collections');
-
 var VALID_LEVELS = ['fatal',
     'error',
     'warning',
@@ -13,41 +11,6 @@ var ENVIRONMENT_MAPPING = {
     1: 'staging',
     2: 'production'
 };
-
-/**
- * Gets the user click stream to send to Sentry.
- *
- * @return {{values: []}|null} - The breadcrumb path
- */
-function getBreadcrumbsPayload() {
-    if (!request || !request.session) {
-        return null;
-    }
-
-    var clickStream = request.session.clickStream;
-    var values = [];
-
-    if (clickStream.enabled) {
-        var previousClick;
-
-        forEach(clickStream.clicks, function (click) {
-            values.push({
-                timestamp: Math.round(click.timestamp / 1000),
-                type: 'navigation',
-                data: {
-                    from: previousClick ? previousClick.url : null,
-                    to: click.url
-                }
-            });
-
-            previousClick = click;
-        });
-    }
-
-    return {
-        values: values
-    };
-}
 
 /**
  * The model representing a Sentry Exception to be posted to the Sentry API.
@@ -71,6 +34,7 @@ function SentryEvent(data) {
     var SentryId = require('*/cartridge/models/SentryId');
     var SentryUser = require('*/cartridge/models/SentryUser');
     var SentryRequest = require('*/cartridge/models/SentryRequest');
+    var SentryBreadcrumb = require('*/cartridge/models/SentryBreadcrumb');
 
     this.event_id = new SentryId(null).toString();
     this.timestamp = Math.round(Date.now() / 1000);
@@ -101,7 +65,7 @@ function SentryEvent(data) {
 
     this.user = new SentryUser(request.httpRemoteAddress, request.session.customer);
     this.request = new SentryRequest(request);
-    this.breadcrumbs = getBreadcrumbsPayload();
+    this.breadcrumbs = new SentryBreadcrumb(request);
 }
 
 SentryEvent.LEVEL_FATAL = 'fatal';

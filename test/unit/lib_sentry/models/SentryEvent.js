@@ -28,11 +28,13 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
             }
         }
     }),
-    '*/cartridge/scripts/util/collections': {
-        forEach: (collection, callback) => {
-            collection.forEach(callback);
+    '*/cartridge/models/SentryBreadcrumb': proxyQuire('lib_sentry/cartridge/models/SentryBreadcrumb', {
+        '*/cartridge/scripts/util/collections': {
+            forEach: (collection, callback) => {
+                collection.forEach(callback);
+            }
         }
-    }
+    })
 });
 
 describe('Model - Sentry Event', () => {
