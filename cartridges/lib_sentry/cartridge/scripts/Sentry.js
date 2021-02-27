@@ -63,22 +63,26 @@ Sentry.prototype.captureMessage = function (message) {
 /**
  * Captures an exception event and sends it to Sentry.
  *
- * @param {Error} exception An exception-like object.
- * @returns {string} The event id
+ * @param {Error} error An exception-like object.
+ * @returns {string|null} The event id
  */
-Sentry.prototype.captureException = function (exception) {
+Sentry.prototype.captureException = function (error) {
     var sentryEvent = new SentryEvent({
-        exception: exception,
+        error: error,
         eventType: SentryEvent.TYPE_EXCEPTION,
         release: this.options.release,
         level: SentryEvent.LEVEL_ERROR
     });
 
     this.options.getEventProcessors().forEach(function (eventProcessor) {
-        eventProcessor.process(sentryEvent);
+        sentryEvent = eventProcessor.process(sentryEvent);
     });
 
-    return sendEvent(sentryEvent, this.options.dsn);
+    if (sentryEvent) {
+        return sendEvent(sentryEvent, this.options.dsn);
+    }
+
+    return null;
 };
 
 /**
