@@ -2,10 +2,10 @@
 
 var SentryEvent = require('*/cartridge/models/SentryEvent');
 var SentryId = require('*/cartridge/models/SentryId');
+var SentryOptions = require('*/cartridge/models/SentryOptions');
 var {
-    getDSN, getProjectName, sendEvent, getLastEventID
+    sendEvent, getLastEventID
 } = require('*/cartridge/scripts/helpers/sentryHelper');
-var SentryConfig = require('*/cartridge/config/sentry');
 
 /**
  * The Sentry SFCC SDK Client.
@@ -37,9 +37,14 @@ function Sentry() {
     // EMPTY CONSTRUCTOR
 }
 
-Sentry.prototype.init = function (config) {
-    this.dsn = (config && config.dsn) || getDSN();
-    this.release = (config && config.release) || (getProjectName() + '@' + SentryConfig['code-version']);
+/**
+ * Initializes Sentry with the given options
+ *
+ * @param {SentryOptions} sentryOptions - The Sentry Options
+ * @return {Sentry} - Sentry instance
+ */
+Sentry.prototype.init = function (sentryOptions) {
+    this.options = sentryOptions || new SentryOptions(null);
 
     return this;
 };
@@ -47,12 +52,12 @@ Sentry.prototype.init = function (config) {
 Sentry.prototype.captureMessage = function (message) {
     var sentryEvent = new SentryEvent({
         eventType: SentryEvent.TYPE_MESSAGE,
-        release: this.release,
+        release: this.options.release,
         message: message,
         level: SentryEvent.LEVEL_INFO
     });
 
-    sendEvent(sentryEvent, this.dsn);
+    sendEvent(sentryEvent, this.options.dsn);
 };
 
 /**
@@ -64,13 +69,17 @@ Sentry.prototype.captureMessage = function (message) {
 Sentry.prototype.captureException = function (exception) {
     var sentryEvent = new SentryEvent({
         eventType: SentryEvent.TYPE_EXCEPTION,
-        release: this.release,
+        release: this.options.release,
         message: exception.message + (exception.stack ? '\n' + exception.stack : ''),
         type: exception.constructor.name,
         level: SentryEvent.LEVEL_ERROR
     });
 
-    return sendEvent(sentryEvent, this.dsn);
+    this.options.getEventProcessors().forEach(function (eventProcessor) {
+        eventProcessor.process(sentryEvent);
+    });
+
+    return sendEvent(sentryEvent, this.options.dsn);
 };
 
 /**

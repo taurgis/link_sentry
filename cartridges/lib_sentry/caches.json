@@ -3,6 +3,10 @@
         {
             "id": "sentryConfig",
             "expireAfterSeconds": 3600
+        },
+        {
+            "id": "sentryEvents",
+            "expireAfterSeconds": 3600
         }
     ]
 }
