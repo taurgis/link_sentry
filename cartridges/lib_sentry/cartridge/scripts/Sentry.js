@@ -75,7 +75,9 @@ Sentry.prototype.captureException = function (error) {
     });
 
     this.options.getEventProcessors().forEach(function (eventProcessor) {
-        sentryEvent = eventProcessor.process(sentryEvent);
+        if (sentryEvent) {
+            sentryEvent = eventProcessor.process(sentryEvent);
+        }
     });
 
     if (sentryEvent) {
