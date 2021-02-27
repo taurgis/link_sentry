@@ -1,6 +1,6 @@
 'use strict';
 
-var { map, forEach } = require('*/cartridge/scripts/util/collections');
+var { forEach } = require('*/cartridge/scripts/util/collections');
 
 var VALID_LEVELS = ['fatal',
     'error',
@@ -54,36 +54,6 @@ function getRequestPayload() {
     }
 
     return requestPayload;
-}
-
-/**
- * Gets the user information to send to Sentry.
- *
- * @return {{customer_groups: *, ip_address: string}} - The user information
- */
-function getCustomerPayload() {
-    if (!request || !request.session) {
-        return null;
-    }
-
-    var customer = request.session.customer;
-
-    var user = {
-        ip_address: request.httpRemoteAddress,
-        customer_groups: map(customer.customerGroups, function (customerGroup) {
-            return customerGroup.ID;
-        }).join(', ')
-    };
-
-    if (customer.authenticated) {
-        var profile = customer.profile;
-
-        if (profile) {
-            user.id = profile.customerNo;
-        }
-    }
-
-    return user;
 }
 
 /**
@@ -141,6 +111,7 @@ function SentryEvent(data) {
 
     var { getInstanceType } = require('dw/system/System');
     var SentryId = require('*/cartridge/models/SentryId');
+    var SentryUser = require('*/cartridge/models/SentryUser');
 
     this.event_id = new SentryId(null).toString();
     this.timestamp = Math.round(Date.now() / 1000);
@@ -169,7 +140,7 @@ function SentryEvent(data) {
         };
     }
 
-    this.user = getCustomerPayload();
+    this.user = new SentryUser(request.httpRemoteAddress, request.session.customer);
     this.request = getRequestPayload();
     this.breadcrumbs = getBreadcrumbsPayload();
 }

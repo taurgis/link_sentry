@@ -14,12 +14,16 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
             createUUID: () => 'xxxxxxxxxxxxxXxxxxxxxxxxxx'
         }
     }),
+    '*/cartridge/models/SentryUser': proxyQuire('lib_sentry/cartridge/models/SentryUser', {
+        '*/cartridge/scripts/util/collections': {
+            map: (collection, callback) => {
+                return collection.map(callback);
+            }
+        }
+    }),
     '*/cartridge/scripts/util/collections': {
         forEach: (collection, callback) => {
             collection.forEach(callback);
-        },
-        map: (collection, callback) => {
-            return collection.map(callback);
         }
     }
 });
