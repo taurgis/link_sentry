@@ -97,7 +97,7 @@ function sendEvent(sentryEvent, dsn) {
         var sentryService = require('*/cartridge/scripts/services/sentryService');
         var sentryServiceRequest = sentryService.sentryEvent(sentryEvent, dsn);
         var result = sentryServiceRequest.call();
-        
+
         if (!result.error) {
             return result.object;
         }
@@ -129,7 +129,6 @@ function sendEvent(sentryEvent, dsn) {
 
     return null;
 }
-
 
 module.exports = {
     getDSN: getDSN,
