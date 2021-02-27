@@ -18,7 +18,7 @@ var ENVIRONMENT_MAPPING = {
  * @param {Object} data - The event data
  * @param {number} data.eventType - The event type
  * @param {string} data.level - The error severity.
- * @param {string} data.message - The exception
+ * @param {Error} data.error - The error
  * @param {string} data.type - The error type
  * @param {string} data.release - The release version
  *
@@ -26,7 +26,7 @@ var ENVIRONMENT_MAPPING = {
  */
 function SentryEvent(data) {
     // If any of these are missing, don't try to create a Sentry Event object
-    if (!data || !data.message || !data.release) {
+    if (!data || !data.error || !data.release) {
         return;
     }
 
@@ -36,6 +36,7 @@ function SentryEvent(data) {
     var SentryRequest = require('*/cartridge/models/SentryRequest');
     var SentryBreadcrumb = require('*/cartridge/models/SentryBreadcrumb');
 
+    this.error = data.error;
     this.event_id = new SentryId(null).toString();
     this.timestamp = Math.round(Date.now() / 1000);
     this.platform = 'javascript';
@@ -53,8 +54,8 @@ function SentryEvent(data) {
     if (data.eventType === SentryEvent.TYPE_EXCEPTION) {
         this.exception = {
             values: [{
-                type: data.type,
-                value: data.message
+                type: this.error.constructor.name,
+                value: this.error.message + (this.error.stack ? '\n' + this.error.stack : '')
             }]
         };
     } else {

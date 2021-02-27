@@ -68,10 +68,9 @@ Sentry.prototype.captureMessage = function (message) {
  */
 Sentry.prototype.captureException = function (exception) {
     var sentryEvent = new SentryEvent({
+        exception: exception,
         eventType: SentryEvent.TYPE_EXCEPTION,
         release: this.options.release,
-        message: exception.message + (exception.stack ? '\n' + exception.stack : ''),
-        type: exception.constructor.name,
         level: SentryEvent.LEVEL_ERROR
     });
 

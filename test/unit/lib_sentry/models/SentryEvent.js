@@ -102,7 +102,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should contain an automatic generated UUID', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1'
         });
 
@@ -111,7 +111,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should contain an automatic generated timestamp representing the time now', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1'
         });
 
@@ -120,7 +120,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should contain the platform with the value "javascript"', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1'
         });
 
@@ -129,7 +129,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should contain the current request URL on which the exception is created', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1'
         });
 
@@ -138,7 +138,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should contain the current request host on which the exception is created', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1'
         });
 
@@ -148,7 +148,7 @@ describe('Model - Sentry Event', () => {
     it('Should contain the release version based on the Sentry config file', () => {
         const projectId = 'project@version1';
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: projectId
         });
 
@@ -157,7 +157,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should contain the current environment', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1'
         });
 
@@ -166,7 +166,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should mark the error as fatal if no level is passed', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1'
         });
 
@@ -175,7 +175,7 @@ describe('Model - Sentry Event', () => {
 
     it('Should set the correct error level', () => {
         const result = new SentryEvent({
-            message: 'My message',
+            error: new Error('My message'),
             release: 'project@version1',
             level: SentryEvent.LEVEL_INFO
         });
@@ -184,9 +184,9 @@ describe('Model - Sentry Event', () => {
     });
 
     it('Should set the exception based on the passed parameters', () => {
-        const message = 'My message';
+        const error = new Error('My message');
         const result = new SentryEvent({
-            message: message,
+            error: error,
             release: 'project@version1',
             type: SentryEvent.ERROR_TYPE_UNKNOWN,
             eventType: SentryEvent.TYPE_EXCEPTION
@@ -194,8 +194,8 @@ describe('Model - Sentry Event', () => {
 
         expect(result.exception).to.deep.equal({
             values: [{
-                type: SentryEvent.ERROR_TYPE_UNKNOWN,
-                value: message
+                type: 'Error',
+                value: error.message + '\n' + error.stack
             }]
         });
     });
@@ -203,7 +203,7 @@ describe('Model - Sentry Event', () => {
     describe('Model - Sentry Event - Request', () => {
         it('Should set the correct request method', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -213,7 +213,7 @@ describe('Model - Sentry Event', () => {
 
         it('Should set the correct request URL', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -223,7 +223,7 @@ describe('Model - Sentry Event', () => {
 
         it('Should set the correct request query string', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -233,7 +233,7 @@ describe('Model - Sentry Event', () => {
 
         it('Should set the correct request cookies', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -245,7 +245,7 @@ describe('Model - Sentry Event', () => {
 
         it('Should set the correct request environment', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -255,7 +255,7 @@ describe('Model - Sentry Event', () => {
 
         it('Should set the correct request headers', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -270,7 +270,7 @@ describe('Model - Sentry Event', () => {
     describe('Model - Sentry Event - User', () => {
         it('Should set the correct user ip address', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -280,7 +280,7 @@ describe('Model - Sentry Event', () => {
 
         it('Should set the correct user customer groups', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -294,7 +294,7 @@ describe('Model - Sentry Event', () => {
             request.session.customer.authenticated = false;
 
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -309,7 +309,7 @@ describe('Model - Sentry Event', () => {
             };
 
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -321,7 +321,7 @@ describe('Model - Sentry Event', () => {
     describe('Model - Sentry Event - Breadcrumb', () => {
         it('Should not set breadcrumbs when there is no click stream', () => {
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });
@@ -339,7 +339,7 @@ describe('Model - Sentry Event', () => {
             };
 
             const result = new SentryEvent({
-                message: 'My message',
+                error: new Error('My message'),
                 release: 'project@version1',
                 level: SentryEvent.LEVEL_INFO
             });

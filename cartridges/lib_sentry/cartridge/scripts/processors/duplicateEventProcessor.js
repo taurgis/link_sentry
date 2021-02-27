@@ -6,7 +6,7 @@ var SentryOptions = require('*/cartridge/models/SentryOptions');
 var SentryEvent = require('*/cartridge/models/SentryEvent');
 
 /**
- * Main processor to set event data.
+ * Processor to prevent duplicate events being sent to Sentry.
  *
  * @param {SentryOptions} options - The options
  * @constructor
