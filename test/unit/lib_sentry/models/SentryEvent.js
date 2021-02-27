@@ -9,9 +9,11 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
     'dw/system/System': {
         getInstanceType: () => 0
     },
-    'dw/util/UUIDUtils': {
-        createUUID: () => 'xxxxxxxxxxxxxXxxxxxxxxxxxx'
-    },
+    '*/cartridge/models/SentryId': proxyQuire('lib_sentry/cartridge/models/SentryId', {
+        'dw/util/UUIDUtils': {
+            createUUID: () => 'xxxxxxxxxxxxxXxxxxxxxxxxxx'
+        }
+    }),
     '*/cartridge/scripts/util/collections': {
         forEach: (collection, callback) => {
             collection.forEach(callback);

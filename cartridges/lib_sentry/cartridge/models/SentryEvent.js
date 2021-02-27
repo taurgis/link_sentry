@@ -140,9 +140,9 @@ function SentryEvent(data) {
     }
 
     var { getInstanceType } = require('dw/system/System');
-    var { createUUID } = require('dw/util/UUIDUtils');
+    var SentryId = require('*/cartridge/models/SentryId');
 
-    this.event_id = (createUUID() + createUUID()).substring(0, 32).toLowerCase();
+    this.event_id = new SentryId(null).toString();
     this.timestamp = Math.round(Date.now() / 1000);
     this.platform = 'javascript';
     this.transaction = request.httpPath;
