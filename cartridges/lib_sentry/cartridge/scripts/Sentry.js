@@ -1,7 +1,7 @@
 'use strict';
 
 var SentryEvent = require('*/cartridge/models/SentryEvent');
-var { getDSN, getProjectName, sendEvent } = require('*/cartridge/scripts/helpers/sentryHelper');
+var { getDSN, getProjectName, sendEvent, getLastEventID } = require('*/cartridge/scripts/helpers/sentryHelper');
 var SentryConfig = require('*/cartridge/config/sentry');
 
 /**
@@ -69,5 +69,12 @@ Sentry.prototype.captureException = function (exception) {
 
     return sendEvent(sentryEvent, this.dsn);
 };
+
+/**
+ * Fetch the last Event ID returned by Sentry.
+ *
+ * @returns {string} - The last know Event ID returned by Sentry.
+ */
+Sentry.prototype.getLastEventID = getLastEventID;
 
 module.exports = new Sentry();

@@ -5,6 +5,30 @@ var DSN_PREFERENCE = 'sentryDSN';
 var PROJECT_NAME_PREFERENCE = 'sentryProjectID';
 
 /**
+ * Stores a Sentry ID in the cache.
+ * @param {string} id - The Event ID
+ */
+function storeEventID(id) {
+    if (empty(id)) {
+        return;
+    }
+
+    var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
+
+    configCache.put('lastEventID', id);
+}
+
+/**
+ * Gets the last known event ID from the cache.
+ * @return {string|Object|null} - The Event ID
+ */
+function getLastEventID() {
+    var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
+
+    return configCache.get('lastEventID');
+}
+
+/**
  * Gets the Public Key (DSN) URL from the Site Preference. First try to fetch it from
  * the cache, if it is not in there get it from the preference and store it.
  *
@@ -76,7 +100,7 @@ function canSendEvent() {
     if (retryAfter) {
         var currentDateTime = Date.now();
 
-        Logger.debug('Sentry :: Recently had a Retry header, which was set until {0}. Current Time is {1}, so result is {2}.',
+        Logger.debug('Sentry :: Recently had a Retry-After header, which was set until {0}. Current Time is {1}, so result is {2}.',
             new Date(retryAfter), new Date(currentDateTime), currentDateTime > retryAfter);
 
         return currentDateTime > retryAfter;
@@ -99,12 +123,13 @@ function sendEvent(sentryEvent, dsn) {
         var result = sentryServiceRequest.call();
 
         if (!result.error) {
+            storeEventID(result.object);
             return result.object;
         }
 
         var resultClient = sentryServiceRequest.getClient();
 
-        Logger.debug('Sentry :: Sentry returned an error: {0}.', resultClient.getResponseHeaders().keySet().toArray().length);
+        Logger.debug('Sentry :: Sentry returned an error: {0}.', resultClient.statusCode);
 
         if (resultClient.statusCode === 429) {
             Logger.debug('Sentry :: Sentry is under maintenance, or our DSN has reached its monthly limit.');
@@ -120,7 +145,8 @@ function sendEvent(sentryEvent, dsn) {
                     blockSendingEvents(Number(retryHeaderValue));
                 }
             } else {
-                blockSendingEvents(Number(1000));
+                // No header was set, so lets stop for 180 seconds
+                blockSendingEvents(Number(180));
             }
 
             return result.errorMessage;
@@ -133,5 +159,6 @@ function sendEvent(sentryEvent, dsn) {
 module.exports = {
     getDSN: getDSN,
     getProjectName: getProjectName,
-    sendEvent: sendEvent
+    sendEvent: sendEvent,
+    getLastEventID: getLastEventID
 };
