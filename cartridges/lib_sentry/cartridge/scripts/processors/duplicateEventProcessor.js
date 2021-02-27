@@ -1,6 +1,5 @@
 'use strict';
 
-var Logger = require('dw/system/Logger').getLogger('sentry');
 // eslint-disable-next-line no-unused-vars
 var SentryOptions = require('*/cartridge/models/SentryOptions');
 // eslint-disable-next-line no-unused-vars
@@ -37,7 +36,7 @@ DuplicateEventProcessor.prototype.process = function (sentryEvent) {
         var Encoding = require('dw/crypto/Encoding');
         var sessionId = request.session.sessionID;
 
-        Logger.debug('Sentry :: Checking for duplicate events for error: {0}', sentryEventError.message);
+        this.options.logger.debug('Sentry :: Checking for duplicate events for error: {0}', sentryEventError.message);
 
         var exceptionHash = Encoding.toHex(
             new MessageDigest(MessageDigest.DIGEST_SHA_512).digestBytes(
@@ -48,12 +47,12 @@ DuplicateEventProcessor.prototype.process = function (sentryEvent) {
         var cacheResult = eventsCache.get(exceptionHash);
 
         if (cacheResult) {
-            Logger.debug('Sentry :: Duplicate Exception detected. Event {0} will be discarded.', sentryEvent.event_id);
+            this.options.logger.debug('Sentry :: Duplicate Exception detected. Event {0} will be discarded.', sentryEvent.event_id);
 
             return null;
         }
 
-        Logger.debug('Sentry :: Exception is not duplicate. Event {0} will be pass through.', sentryEvent.event_id);
+        this.options.logger.debug('Sentry :: Exception is not duplicate. Event {0} will pass through.', sentryEvent.event_id);
 
         eventsCache.put(exceptionHash, true);
     }

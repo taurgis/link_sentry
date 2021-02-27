@@ -16,6 +16,7 @@ function SentryOptions(config) {
     this.dsn = (config && config.dsn) || getDSN();
     this.release = (config && config.release) || (getProjectName() + '@' + SentryConfig['code-version']);
     this.eventProcessors = [new DuplicateEventProcessor(this)];
+    this.logger = require('dw/system/Logger').getLogger('sentry');
 }
 
 /**
