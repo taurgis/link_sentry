@@ -6,6 +6,7 @@ var SentryOptions = require('*/cartridge/models/SentryOptions');
 var {
     sendEvent, getLastEventID
 } = require('*/cartridge/scripts/helpers/sentryHelper');
+var BEFORE_SEND_HOOK = 'com.sentry.beforesend';
 
 /**
  * The Sentry SFCC SDK Client.
@@ -81,6 +82,16 @@ Sentry.prototype.captureException = function (error) {
     });
 
     if (sentryEvent) {
+        var { hasHook, callHook } = require('dw/system/HookMgr');
+
+        if (hasHook(BEFORE_SEND_HOOK)) {
+            var result = callHook(BEFORE_SEND_HOOK, 'beforeSend', sentryEvent);
+
+            if (!result) {
+                return null;
+            }
+        }
+
         return sendEvent(sentryEvent, this.options.dsn);
     }
 
