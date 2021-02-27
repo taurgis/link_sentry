@@ -15,6 +15,9 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
     '*/cartridge/scripts/util/collections': {
         forEach: (collection, callback) => {
             collection.forEach(callback);
+        },
+        map: (collection, callback) => {
+            return collection.map(callback);
         }
     }
 });
@@ -42,7 +45,19 @@ describe('Model - Sentry Event', () => {
             }, {
                 name: 'cookie2',
                 value: 'value2'
-            }]
+            }],
+            session: {
+                customer: {
+                    customerGroups: [{
+                        ID: 'customer_grp1'
+                    }, {
+                        ID: 'customer_grp2'
+                    }]
+                },
+                clickStream: {
+                    enabled: false
+                }
+            }
         };
 
         global.request.httpCookies.cookieCount = 2;
@@ -234,6 +249,95 @@ describe('Model - Sentry Event', () => {
                 header1: 'headervalue1',
                 header2: 'headervalue2'
             });
+        });
+    });
+
+    describe('Model - Sentry Event - User', () => {
+        it('Should set the correct user ip address', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.user.ip_address).to.equal(request.httpRemoteAddress);
+        });
+
+        it('Should set the correct user customer groups', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.user.customer_groups).to.equal(
+                request.session.customer.customerGroups.map(((customerGroup) => customerGroup.ID)).join(', ')
+            );
+        });
+
+        it('Should not set the customer number if the customer is not logged in, on the user', () => {
+            request.session.customer.authenticated = false;
+
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.user.id).to.not.exist;
+        });
+
+        it('Should set the customer number if the customer is logged in, on the user', () => {
+            request.session.customer.authenticated = true;
+            request.session.customer.profile = {
+                customerNo: '1234'
+            };
+
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.user.id).to.equal(request.session.customer.profile.customerNo);
+        });
+    });
+
+    describe('Model - Sentry Event - Breadcrumb', () => {
+        it('Should not set breadcrumbs when there is no click stream', () => {
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.breadcrumbs.values).to.be.be.length(0);
+        });
+
+        it('Should set breadcrumbs when there is a click stream', () => {
+            request.session.clickStream = {
+                enabled: true,
+                clicks: [{
+                    url: 'my-url',
+                    timestamp: Date.now()
+                }]
+            };
+
+            const result = new SentryEvent({
+                message: 'My message',
+                release: 'project@version1',
+                level: SentryEvent.LEVEL_INFO
+            });
+
+            expect(result.breadcrumbs.values).to.be.be.length(1);
+            expect(result.breadcrumbs.values).to.deep.equal([{
+                data: {
+                    from: null,
+                    to: 'my-url'
+                },
+                type: 'navigation',
+                timestamp: Math.round(Date.now() / 1000)
+            }]);
         });
     });
 });
