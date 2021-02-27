@@ -21,6 +21,13 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
             }
         }
     }),
+    '*/cartridge/models/SentryRequest': proxyQuire('lib_sentry/cartridge/models/SentryRequest', {
+        '*/cartridge/scripts/util/collections': {
+            forEach: (collection, callback) => {
+                collection.forEach(callback);
+            }
+        }
+    }),
     '*/cartridge/scripts/util/collections': {
         forEach: (collection, callback) => {
             collection.forEach(callback);

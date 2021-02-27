@@ -15,48 +15,6 @@ var ENVIRONMENT_MAPPING = {
 };
 
 /**
- * Gets the request information to send to Sentry.
- *
- * @return {{headers: Object, method: string, env: {REMOTE_ADDR: string}, url: string, query_string: string, cookies: string}|null} - The request information
- */
-function getRequestPayload() {
-    if (!request) {
-        return null;
-    }
-
-    var headers = {};
-    var cookies = '';
-
-    if (request.httpCookies) {
-        // eslint-disable-next-line no-plusplus
-        for (var i = 0; i < request.httpCookies.cookieCount; i++) {
-            var currentCookie = request.httpCookies[i];
-
-            cookies += currentCookie.name + '=' + currentCookie.value + '; ';
-        }
-    }
-
-    var requestPayload = {
-        method: request.httpMethod,
-        url: request.httpURL.toString(),
-        query_string: request.httpQueryString,
-        cookies: cookies,
-        env: {
-            REMOTE_ADDR: request.httpRemoteAddress
-        },
-        headers: headers
-    };
-
-    if (request.httpHeaders) {
-        forEach(request.httpHeaders.keySet(), function (httpHeader) {
-            headers[httpHeader] = request.httpHeaders.get(httpHeader);
-        });
-    }
-
-    return requestPayload;
-}
-
-/**
  * Gets the user click stream to send to Sentry.
  *
  * @return {{values: []}|null} - The breadcrumb path
@@ -112,6 +70,7 @@ function SentryEvent(data) {
     var { getInstanceType } = require('dw/system/System');
     var SentryId = require('*/cartridge/models/SentryId');
     var SentryUser = require('*/cartridge/models/SentryUser');
+    var SentryRequest = require('*/cartridge/models/SentryRequest');
 
     this.event_id = new SentryId(null).toString();
     this.timestamp = Math.round(Date.now() / 1000);
@@ -141,7 +100,7 @@ function SentryEvent(data) {
     }
 
     this.user = new SentryUser(request.httpRemoteAddress, request.session.customer);
-    this.request = getRequestPayload();
+    this.request = new SentryRequest(request);
     this.breadcrumbs = getBreadcrumbsPayload();
 }
 
