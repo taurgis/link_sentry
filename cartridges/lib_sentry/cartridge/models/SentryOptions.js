@@ -37,4 +37,26 @@ SentryOptions.prototype.getEventProcessors = function () {
     return this.eventProcessors;
 };
 
+/**
+ * Returns the configured Logger.
+ *
+ * @return {dw.system.Log} - the logger
+ */
+SentryOptions.prototype.getLogger = function () {
+    return this.logger;
+};
+
+/**
+ * Sets the Logger
+ *
+ * @param {dw.system.Log|dw.system.Logger} logger the logger interface
+ */
+SentryOptions.prototype.setLogger = function (logger) {
+    if (!logger || (typeof logger.debug === 'function')) {
+        return;
+    }
+
+    this.logger = logger;
+};
+
 module.exports = SentryOptions;
