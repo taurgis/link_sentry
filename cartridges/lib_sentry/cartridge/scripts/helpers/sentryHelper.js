@@ -14,8 +14,10 @@ function storeEventID(id) {
     }
 
     var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
+    var key = request.session.sessionID + 'lastEventID';
+    Logger.debug('Sentry :: Storing last Event ID in cache under key {0}.', key);
 
-    configCache.put('lastEventID', id);
+    configCache.put(key, id);
 }
 
 /**
@@ -24,8 +26,11 @@ function storeEventID(id) {
  */
 function getLastEventID() {
     var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
+    var key = request.session.sessionID + 'lastEventID';
 
-    return configCache.get('lastEventID');
+    Logger.debug('Sentry :: Fetching last Event ID in cache under key {0}.', key);
+
+    return configCache.get(request.session.sessionID + 'lastEventID');
 }
 
 /**

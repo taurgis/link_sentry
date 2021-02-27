@@ -1,7 +1,9 @@
 'use strict';
 
 var SentryEvent = require('*/cartridge/models/SentryEvent');
-var { getDSN, getProjectName, sendEvent, getLastEventID } = require('*/cartridge/scripts/helpers/sentryHelper');
+var {
+    getDSN, getProjectName, sendEvent, getLastEventID
+} = require('*/cartridge/scripts/helpers/sentryHelper');
 var SentryConfig = require('*/cartridge/config/sentry');
 
 /**
