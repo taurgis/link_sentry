@@ -6,7 +6,8 @@ const sinon = require('sinon');
 
 require('app-module-path').addPath(process.cwd() + '/cartridges');
 
-const breadcrumbsSpy = sinon.stub();
+const breadcrumbsStub = sinon.stub();
+const userStub = sinon.stub();
 
 const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
     'dw/system/System': {
@@ -17,13 +18,7 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
             createUUID: () => 'xxxxxxxxxxxxxXxxxxxxxxxxxx'
         }
     }),
-    '*/cartridge/models/SentryUser': proxyQuire('lib_sentry/cartridge/models/SentryUser', {
-        '*/cartridge/scripts/util/collections': {
-            map: (collection, callback) => {
-                return collection.map(callback);
-            }
-        }
-    }),
+    '*/cartridge/models/SentryUser': userStub,
     '*/cartridge/models/SentryRequest': proxyQuire('lib_sentry/cartridge/models/SentryRequest', {
         '*/cartridge/scripts/util/collections': {
             forEach: (collection, callback) => {
@@ -31,7 +26,7 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
             }
         }
     }),
-    '*/cartridge/models/SentryBreadcrumb': breadcrumbsSpy
+    '*/cartridge/models/SentryBreadcrumb': breadcrumbsStub
 });
 
 describe('Model - Sentry Event', () => {
@@ -59,13 +54,7 @@ describe('Model - Sentry Event', () => {
                 value: 'value2'
             }],
             session: {
-                customer: {
-                    customerGroups: [{
-                        ID: 'customer_grp1'
-                    }, {
-                        ID: 'customer_grp2'
-                    }]
-                }
+                customer: {}
             }
         };
 
@@ -73,7 +62,8 @@ describe('Model - Sentry Event', () => {
     });
 
     beforeEach(() => {
-        breadcrumbsSpy.reset();
+        breadcrumbsStub.reset();
+        userStub.reset();
     });
 
     it('Should create an empty object if no parameter is passed', () => {
@@ -198,19 +188,30 @@ describe('Model - Sentry Event', () => {
         });
     });
 
-    it('Should generate breadcrumbs', () => {
+    it('Should generate breadcrumbs.', () => {
         new SentryEvent({
             error: new Error('My message'),
             release: 'project@version1',
             level: SentryEvent.LEVEL_INFO
         });
 
-        expect(breadcrumbsSpy.calledOnce).to.be.true;
-        expect(breadcrumbsSpy.calledWith(request)).to.be.true;
+        expect(breadcrumbsStub.calledOnce).to.be.true;
+        expect(breadcrumbsStub.calledWith(request)).to.be.true;
+    });
+
+    it('Should generate user info.', () => {
+        new SentryEvent({
+            error: new Error('My message'),
+            release: 'project@version1',
+            level: SentryEvent.LEVEL_INFO
+        });
+
+        expect(userStub.calledOnce).to.be.true;
+        expect(userStub.calledWith(request.httpRemoteAddress, request.session.customer)).to.be.true;
     });
 
     describe('Model - Sentry Event - Request', () => {
-        it('Should set the correct request method', () => {
+        it('Should set the correct request method.', () => {
             const result = new SentryEvent({
                 error: new Error('My message'),
                 release: 'project@version1',
@@ -220,7 +221,7 @@ describe('Model - Sentry Event', () => {
             expect(result.request.method).to.equal(request.httpMethod);
         });
 
-        it('Should set the correct request URL', () => {
+        it('Should set the correct request URL.', () => {
             const result = new SentryEvent({
                 error: new Error('My message'),
                 release: 'project@version1',
@@ -273,57 +274,6 @@ describe('Model - Sentry Event', () => {
                 header1: 'headervalue1',
                 header2: 'headervalue2'
             });
-        });
-    });
-
-    describe('Model - Sentry Event - User', () => {
-        it('Should set the correct user ip address', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.user.ip_address).to.equal(request.httpRemoteAddress);
-        });
-
-        it('Should set the correct user customer groups', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.user.customer_groups).to.equal(
-                request.session.customer.customerGroups.map(((customerGroup) => customerGroup.ID)).join(', ')
-            );
-        });
-
-        it('Should not set the customer number if the customer is not logged in, on the user', () => {
-            request.session.customer.authenticated = false;
-
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.user.id).to.not.exist;
-        });
-
-        it('Should set the customer number if the customer is logged in, on the user', () => {
-            request.session.customer.authenticated = true;
-            request.session.customer.profile = {
-                customerNo: '1234'
-            };
-
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.user.id).to.equal(request.session.customer.profile.customerNo);
         });
     });
 });
