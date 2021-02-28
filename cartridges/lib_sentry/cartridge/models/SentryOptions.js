@@ -52,7 +52,7 @@ SentryOptions.prototype.getLogger = function () {
  * @param {dw.system.Log|dw.system.Logger} logger the logger interface
  */
 SentryOptions.prototype.setLogger = function (logger) {
-    if (!logger || (typeof logger.debug === 'function')) {
+    if (!logger || (typeof logger.debug !== 'function')) {
         return;
     }
 

@@ -45,7 +45,7 @@ function Sentry() {
  * @return {Sentry} - Sentry instance
  */
 Sentry.prototype.init = function (sentryOptions) {
-    this.options = sentryOptions || new SentryOptions(null);
+    this.options = new SentryOptions(sentryOptions);
 
     return this;
 };
