@@ -2,8 +2,11 @@
 
 const expect = require('chai').expect;
 const proxyQuire = require('proxyquire').noCallThru();
+const sinon = require('sinon');
 
 require('app-module-path').addPath(process.cwd() + '/cartridges');
+
+const breadcrumbsSpy = sinon.stub();
 
 const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
     'dw/system/System': {
@@ -28,13 +31,7 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
             }
         }
     }),
-    '*/cartridge/models/SentryBreadcrumb': proxyQuire('lib_sentry/cartridge/models/SentryBreadcrumb', {
-        '*/cartridge/scripts/util/collections': {
-            forEach: (collection, callback) => {
-                collection.forEach(callback);
-            }
-        }
-    })
+    '*/cartridge/models/SentryBreadcrumb': breadcrumbsSpy
 });
 
 describe('Model - Sentry Event', () => {
@@ -68,14 +65,15 @@ describe('Model - Sentry Event', () => {
                     }, {
                         ID: 'customer_grp2'
                     }]
-                },
-                clickStream: {
-                    enabled: false
                 }
             }
         };
 
         global.request.httpCookies.cookieCount = 2;
+    });
+
+    beforeEach(() => {
+        breadcrumbsSpy.reset();
     });
 
     it('Should create an empty object if no parameter is passed', () => {
@@ -200,6 +198,17 @@ describe('Model - Sentry Event', () => {
         });
     });
 
+    it('Should generate breadcrumbs', () => {
+        new SentryEvent({
+            error: new Error('My message'),
+            release: 'project@version1',
+            level: SentryEvent.LEVEL_INFO
+        });
+
+        expect(breadcrumbsSpy.calledOnce).to.be.true;
+        expect(breadcrumbsSpy.calledWith(request)).to.be.true;
+    });
+
     describe('Model - Sentry Event - Request', () => {
         it('Should set the correct request method', () => {
             const result = new SentryEvent({
@@ -315,44 +324,6 @@ describe('Model - Sentry Event', () => {
             });
 
             expect(result.user.id).to.equal(request.session.customer.profile.customerNo);
-        });
-    });
-
-    describe('Model - Sentry Event - Breadcrumb', () => {
-        it('Should not set breadcrumbs when there is no click stream', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.breadcrumbs.values).to.be.be.length(0);
-        });
-
-        it('Should set breadcrumbs when there is a click stream', () => {
-            request.session.clickStream = {
-                enabled: true,
-                clicks: [{
-                    url: 'my-url',
-                    timestamp: Date.now()
-                }]
-            };
-
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.breadcrumbs.values).to.be.be.length(1);
-            expect(result.breadcrumbs.values).to.deep.equal([{
-                data: {
-                    from: null,
-                    to: 'my-url'
-                },
-                type: 'navigation',
-                timestamp: Math.round(Date.now() / 1000)
-            }]);
         });
     });
 });
