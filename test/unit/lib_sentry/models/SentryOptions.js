@@ -73,7 +73,7 @@ describe('Model - Sentry Options', () => {
     it('Should be possible to override the logger.', () => {
         var result = new SentryOptions();
         var customLogger = {
-            debug: function() {}
+            debug: function () {}
         };
         result.setLogger(customLogger);
 
@@ -91,7 +91,7 @@ describe('Model - Sentry Options', () => {
     it('Should be possible to get the logger.', () => {
         var result = new SentryOptions();
         var customLogger = {
-            debug: function() {}
+            debug: function () {}
         };
         result.setLogger(customLogger);
 
