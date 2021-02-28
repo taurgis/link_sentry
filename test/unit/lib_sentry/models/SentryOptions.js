@@ -17,6 +17,7 @@ var SentryOptions = proxyQuire('lib_sentry/cartridge/models/SentryOptions', {
     },
     '*/cartridge/config/sentry': require('lib_sentry/cartridge/config/sentry'),
     '*/cartridge/scripts/processors/duplicateEventProcessor': function () { },
+    '*/cartridge/scripts/processors/cookieProcessor': function () { },
     'dw/system/Logger': {
         getLogger: loggerSpy
     }
@@ -28,7 +29,7 @@ describe('Model - Sentry Options', () => {
 
         expect(result.dsn).to.equal(defaultDSN);
         expect(result.release).to.include(defaultProject);
-        expect(result.eventProcessors).to.be.length(1);
+        expect(result.eventProcessors).to.be.length(2);
         expect(loggerSpy.calledOnce).to.be.true;
         expect(loggerSpy.calledWith('sentry')).to.be.true;
     });
@@ -59,7 +60,7 @@ describe('Model - Sentry Options', () => {
         var result = new SentryOptions();
         result.addEventProcessor(eventProcessor);
 
-        expect(result.eventProcessors).to.be.length(2);
+        expect(result.eventProcessors).to.be.length(3);
         expect(eventProcessor.calledOnce).to.be.true;
         expect(eventProcessor.calledWith(result)).to.be.true;
     });
@@ -67,7 +68,7 @@ describe('Model - Sentry Options', () => {
     it('Should be possible to get all event processors.', () => {
         var result = new SentryOptions();
 
-        expect(result.getEventProcessors()).to.be.length(1);
+        expect(result.getEventProcessors()).to.be.length(2);
     });
 
     it('Should be possible to override the logger.', () => {

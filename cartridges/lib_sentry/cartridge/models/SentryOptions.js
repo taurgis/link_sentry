@@ -5,6 +5,7 @@ var {
 } = require('*/cartridge/scripts/helpers/sentryHelper');
 var SentryConfig = require('*/cartridge/config/sentry');
 var DuplicateEventProcessor = require('*/cartridge/scripts/processors/duplicateEventProcessor');
+var CookieProcessor = require('*/cartridge/scripts/processors/cookieProcessor');
 
 /**
  * Sentry SDK options
@@ -15,7 +16,7 @@ var DuplicateEventProcessor = require('*/cartridge/scripts/processors/duplicateE
 function SentryOptions(config) {
     this.dsn = (config && config.dsn) || getDSN();
     this.release = (config && config.release) || (getProjectName() + '@' + SentryConfig['code-version']);
-    this.eventProcessors = [new DuplicateEventProcessor(this)];
+    this.eventProcessors = [new DuplicateEventProcessor(this), new CookieProcessor(this)];
     this.logger = require('dw/system/Logger').getLogger('sentry');
 }
 
