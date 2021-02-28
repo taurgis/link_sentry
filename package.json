@@ -31,7 +31,7 @@
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-sitegenesis": "~1.0.0",
-    "husky": "^4.2.5",
+    "husky": "^4.3.8",
     "isml-linter": "^5.30.3",
     "mocha": "^8.3.0",
     "proxyquire": "1.7.11",
