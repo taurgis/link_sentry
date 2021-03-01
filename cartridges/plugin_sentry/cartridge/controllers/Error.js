@@ -15,11 +15,8 @@ function logError(req, res, next) {
     var error = req.error;
 
     if (error) {
-        var SentryException = require('*/cartridge/models/sentryException');
-        var { logException } = require('*/cartridge/scripts/helpers/sentryHelper');
-        var exception = error.errorText;
-
-        logException(exception, SentryException.LEVEL_ERROR, SentryException.TYPE_UNKNOWN);
+        var Sentry = require('*/cartridge/scripts/Sentry').init();
+        Sentry.captureException(new Error(error.errorText));
     }
     next();
 }
@@ -31,11 +28,11 @@ server.prepend('ErrorCode', logError);
  * Logs forbidden access requests to Sentry. If a user is logged in, the customer number is logged.
  */
 server.prepend('Forbidden', function (req, res, next) {
-    var SentryException = require('*/cartridge/models/sentryException');
-    var { logException } = require('*/cartridge/scripts/helpers/sentryHelper');
-
     if (req.currentCustomer.profile) {
-        logException('Forbidden access for customer ' + req.currentCustomer.profile.customerNo, SentryException.LEVEL_INFO, SentryException.TYPE_SECURITY_VIOLATION);
+        var Sentry = require('*/cartridge/scripts/Sentry').init();
+        var message = 'Forbidden access for customer ' + req.currentCustomer.profile.customerNo;
+
+        Sentry.captureException(new Error(message));
     }
 
     next();

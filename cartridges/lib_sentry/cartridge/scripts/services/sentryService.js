@@ -1,50 +1,76 @@
 'use strict';
 
+var Logger = require('dw/system/Logger').getLogger('sentry');
 var DSN_REGEX = 'https://(.+)@.+/(.+)';
 
 /**
  * Creates the service to add a new Sentry event.
  *
- * @param {Object} sentryException - The exception to post to Sentry
- *
+ * @param {Object} sentryEvent - The exception to post to Sentry
+ * @param {string} dsn - The DSN to call
  * @return {dw.svc.Service} - The service
  */
-function sentryEvent(sentryException) {
+function sentryEventService(sentryEvent, dsn) {
     var { createService } = require('dw/svc/LocalServiceRegistry');
-    var { getDSN } = require('*/cartridge/scripts/helpers/sentryHelper');
     var sentryConfig = require('*/cartridge/config/sentry');
 
     return createService('Sentry', {
         createRequest: function (svc) {
-            var splitDSN = getDSN().match(DSN_REGEX);
+            var splitDSN = dsn.match(DSN_REGEX);
             var key = splitDSN[1];
             var projectID = splitDSN[2];
-            var url = getDSN().replace(projectID, '') + 'api/' + projectID + '/store/';
+            var url = dsn.replace(projectID, '') + 'api/' + projectID + '/store/';
 
             svc.addHeader('X-Sentry-Auth', 'Sentry sentry_version=7,sentry_key= '
                 + key + ',sentry_client=' + sentryConfig['sentry-client'].name + '/' + sentryConfig['sentry-client'].version
-                + ',sentry_timestamp=' + sentryException.timeStamp);
+                + ',sentry_timestamp=' + sentryEvent.timeStamp);
 
             svc.setRequestMethod('POST');
             svc.setURL(url);
 
-            return JSON.stringify(sentryException);
+            Logger.debug('Sentry :: Sending event to Sentry: \n {0}.', JSON.stringify(sentryEvent, null, 4));
+
+            return JSON.stringify(sentryEvent);
         },
         parseResponse: function (svc, client) {
-            if (client.statusCode === 200) {
-                return true;
+            try {
+                if (client.statusCode === 200) {
+                    Logger.debug('Sentry :: Sentry successfully processed our request.');
+
+                    return JSON.parse(client.text).id;
+                }
+            } catch (e) {
+                Logger.error(e);
             }
 
-            return false;
+            return null;
         },
         mockCall: function () {
-            return JSON.stringify({
-                id: 'fd6d8c0c43fc4630ad850ee518f1b9d0'
-            });
+            if (sentryEvent.exception.values[0].value === 'retry_header') {
+                return {
+                    statusCode: 429,
+                    statusMessage: 'Maintenance',
+                    responseHeaders: {
+                        'Retry-After': 1000
+                    },
+                    text: JSON.stringify({
+                        id: 'fd6d8c0c43fc4630ad850ee518f1b9d0'
+                    }),
+                    errorText: 'Maintenance'
+                };
+            }
+
+            return {
+                statusCode: 200,
+                statusMessage: 'Success',
+                text: JSON.stringify({
+                    id: 'fd6d8c0c43fc4630ad850ee518f1b9d0'
+                })
+            };
         }
     });
 }
 
 module.exports = {
-    sentryEvent: sentryEvent
+    sentryEvent: sentryEventService
 };
