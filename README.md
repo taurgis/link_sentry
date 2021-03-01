@@ -38,6 +38,44 @@ For information on Getting Started with SFRA,
 see [Get Started with SFRA](https://documentation.b2c.commercecloud.salesforce.com/DOC1/index.jsp?topic=%2Fcom.demandware.dochelp%2Fcontent%2Fb2c_commerce%2Ftopics%2Fsfra%2Fb2c_sfra_setup.html)
 .
 
+#Metadata
+
+## Services
+To contact Sentry it is required to configure a service (without credentials). A file containing the required 
+configuration can be imported in the business manager. The file is located here `metadata/services.xml`.
+
+## Site Preferences
+A few preferences are added to the `Site Preferences` system object. The file `metadata/site-preferences.xml` can be 
+imported as a System Object Type in the business manager.
+
+#Usage
+
+## Initialization
+
+## Hooks
+
+### com.sentry.beforesend
+Use this hook to prevent certain events from being sent to Sentry, or to make modifications to it.
+```
+Hook:       com.sentry.beforesend
+Function:   beforeSend
+Parameters: SentryEvent object
+
+Example:
+
+function beforeSend(sentryEvent) {
+   // your logic, if this function returns null, the event is not sent.
+   
+   return sentryEvent;
+}
+
+module.exports = {
+   beforeSend: beforeSend
+};
+```
+
+Never used hooks before? Look at the documentation [here](https://documentation.b2c.commercecloud.salesforce.com/DOC1/topic/com.demandware.dochelp/content/b2c_commerce/topics/sfra/b2c_sfra_hooks.html?resultof=%22%68%6f%6f%6b%73%22%20%22%68%6f%6f%6b%22%20).
+
 # Release management
 
 # NPM scripts

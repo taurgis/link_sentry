@@ -36,7 +36,11 @@ function SentryEvent(data) {
     var SentryRequest = require('*/cartridge/models/SentryRequest');
     var SentryBreadcrumb = require('*/cartridge/models/SentryBreadcrumb');
 
-    this.error = data.error;
+    Object.defineProperty(this, 'error', {
+        value: data.error,
+        enumerable: false
+    });
+
     this.event_id = new SentryId(null).toString();
     this.timestamp = Math.round(Date.now() / 1000);
     this.platform = 'javascript';

@@ -1,5 +1,7 @@
 'use strict';
 
+var { getCookiesAllowed } = require('*/cartridge/scripts/helpers/sentryHelper');
+
 // eslint-disable-next-line no-unused-vars
 var SentryOptions = require('*/cartridge/models/SentryOptions');
 // eslint-disable-next-line no-unused-vars
@@ -49,9 +51,13 @@ function getCookies(request) {
 CookieProcessor.prototype.process = function (sentryEvent) {
     var currentSentryEvent = sentryEvent;
 
-    this.options.logger.debug('Sentry :: Setting cookies on event.');
+    if (getCookiesAllowed()) {
+        this.options.logger.debug('Sentry :: Setting cookies on event.');
 
-    currentSentryEvent.request.cookies = getCookies(request);
+        currentSentryEvent.request.cookies = getCookies(request);
+    } else {
+        this.options.logger.debug('Sentry :: Not allowed to set cookies on event.');
+    }
 
     return currentSentryEvent;
 };

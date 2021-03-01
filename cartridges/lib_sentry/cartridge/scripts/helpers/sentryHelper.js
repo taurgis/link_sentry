@@ -3,6 +3,7 @@
 var Logger = require('dw/system/Logger').getLogger('sentry');
 var DSN_PREFERENCE = 'sentryDSN';
 var PROJECT_NAME_PREFERENCE = 'sentryProjectID';
+var COOKIES_PREFERENCE = 'sentryCookiesEnabled';
 
 /**
  * Stores a Sentry ID in the cache.
@@ -50,6 +51,25 @@ function getDSN() {
         Logger.debug('Sentry :: Fetching DSN from the Site Preference.');
 
         return currentSite.getCustomPreferenceValue(DSN_PREFERENCE);
+    });
+}
+
+/**
+ * Gets wether or not it is allowed to send cookie data to Sentry.
+ *
+ * @return {string|Object} - The DSN URL
+ */
+function getCookiesAllowed() {
+    var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
+
+    Logger.debug('Sentry :: Fetching Cookies Preference.');
+
+    return configCache.get('cookiesEnabled', function () {
+        var currentSite = require('dw/system/Site').getCurrent();
+
+        Logger.debug('Sentry :: Fetching if cookies are allowed from the Site Preference.');
+
+        return currentSite.getCustomPreferenceValue(COOKIES_PREFERENCE);
     });
 }
 
@@ -124,6 +144,7 @@ function canSendEvent() {
 function sendEvent(sentryEvent, dsn) {
     if (!empty(sentryEvent) && canSendEvent()) {
         var sentryService = require('*/cartridge/scripts/services/sentryService');
+
         var sentryServiceRequest = sentryService.sentryEvent(sentryEvent, dsn);
         var result = sentryServiceRequest.call();
 
@@ -164,6 +185,7 @@ function sendEvent(sentryEvent, dsn) {
 module.exports = {
     getDSN: getDSN,
     getProjectName: getProjectName,
+    getCookiesAllowed: getCookiesAllowed,
     sendEvent: sendEvent,
     getLastEventID: getLastEventID
 };

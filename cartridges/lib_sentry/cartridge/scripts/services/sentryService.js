@@ -28,6 +28,8 @@ function sentryEventService(sentryEvent, dsn) {
             svc.setRequestMethod('POST');
             svc.setURL(url);
 
+            Logger.debug('Sentry :: Sending event to Sentry: \n {0}.', JSON.stringify(sentryEvent, null, 4));
+
             return JSON.stringify(sentryEvent);
         },
         parseResponse: function (svc, client) {

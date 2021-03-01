@@ -85,9 +85,9 @@ Sentry.prototype.captureException = function (error) {
         var { hasHook, callHook } = require('dw/system/HookMgr');
 
         if (hasHook(BEFORE_SEND_HOOK)) {
-            var result = callHook(BEFORE_SEND_HOOK, 'beforeSend', sentryEvent);
+            sentryEvent = callHook(BEFORE_SEND_HOOK, 'beforeSend', sentryEvent);
 
-            if (!result) {
+            if (!sentryEvent) {
                 return null;
             }
         }

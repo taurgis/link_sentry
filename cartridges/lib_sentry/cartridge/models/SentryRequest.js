@@ -13,7 +13,10 @@ function getHeaders(request) {
 
     if (request.httpHeaders) {
         forEach(request.httpHeaders.keySet(), function (httpHeader) {
-            headers[httpHeader] = request.httpHeaders.get(httpHeader);
+            // Filter out the cookies, they should only be included if cookies are allowed.
+            if (httpHeader !== 'cookie') {
+                headers[httpHeader] = request.httpHeaders.get(httpHeader);
+            }
         });
     }
     return headers;

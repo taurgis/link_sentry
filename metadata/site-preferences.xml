@@ -19,12 +19,21 @@
                 <externally-managed-flag>false</externally-managed-flag>
                 <min-length>0</min-length>
             </attribute-definition>
+            <attribute-definition attribute-id="sentryCookiesEnabled">
+                <display-name xml:lang="x-default">Cookie Tracking Enabled</display-name>
+                <description xml:lang="x-default">Whether or not cookies should be sent to Sentry.</description>
+                <type>boolean</type>
+                <mandatory-flag>false</mandatory-flag>
+                <externally-managed-flag>false</externally-managed-flag>
+                <default-value>true</default-value>
+            </attribute-definition>
         </custom-attribute-definitions>
         <group-definitions>
             <attribute-group group-id="Sentry">
                 <display-name xml:lang="x-default">Sentry Configuration</display-name>
                 <attribute attribute-id="sentryDSN"/>
                 <attribute attribute-id="sentryProjectID"/>
+                <attribute attribute-id="sentryCookiesEnabled"/>
             </attribute-group>
         </group-definitions>
     </type-extension>
