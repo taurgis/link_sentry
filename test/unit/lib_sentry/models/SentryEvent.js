@@ -8,6 +8,7 @@ require('app-module-path').addPath(process.cwd() + '/cartridges');
 
 const breadcrumbsStub = sinon.stub();
 const userStub = sinon.stub();
+const requestStub = sinon.stub();
 
 const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
     'dw/system/System': {
@@ -19,13 +20,7 @@ const SentryEvent = proxyQuire('lib_sentry/cartridge/models/SentryEvent', {
         }
     }),
     '*/cartridge/models/SentryUser': userStub,
-    '*/cartridge/models/SentryRequest': proxyQuire('lib_sentry/cartridge/models/SentryRequest', {
-        '*/cartridge/scripts/util/collections': {
-            forEach: (collection, callback) => {
-                collection.forEach(callback);
-            }
-        }
-    }),
+    '*/cartridge/models/SentryRequest': requestStub,
     '*/cartridge/models/SentryBreadcrumb': breadcrumbsStub
 });
 
@@ -37,14 +32,7 @@ describe('Model - Sentry Event', () => {
             httpMethod: 'POST',
             httpQueryString: 'test=value',
             httpRemoteAddress: '127.0.0°.1',
-            httpHeaders: {
-                keySet: () => ['header1', 'header2'],
-                values: {
-                    header1: 'headervalue1',
-                    header2: 'headervalue2'
-                },
-                get: (key) => request.httpHeaders.values[key]
-            },
+            httpHeaders: { },
             httpURL: 'httpURL',
             httpCookies: [{
                 name: 'cookie1',
@@ -64,6 +52,7 @@ describe('Model - Sentry Event', () => {
     beforeEach(() => {
         breadcrumbsStub.reset();
         userStub.reset();
+        requestStub.reset();
     });
 
     it('Should create an empty object if no parameter is passed', () => {
@@ -210,58 +199,14 @@ describe('Model - Sentry Event', () => {
         expect(userStub.calledWith(request.httpRemoteAddress, request.session.customer)).to.be.true;
     });
 
-    describe('Model - Sentry Event - Request', () => {
-        it('Should set the correct request method.', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.request.method).to.equal(request.httpMethod);
+    it('Should generate request info.', () => {
+        new SentryEvent({
+            error: new Error('My message'),
+            release: 'project@version1',
+            level: SentryEvent.LEVEL_INFO
         });
 
-        it('Should set the correct request URL.', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.request.url).to.equal(request.httpURL);
-        });
-
-        it('Should set the correct request query string', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.request.query_string).to.equal(request.httpQueryString);
-        });
-
-        it('Should set the correct request environment', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.request.env.REMOTE_ADDR).to.equal(request.httpRemoteAddress);
-        });
-
-        it('Should set the correct request headers', () => {
-            const result = new SentryEvent({
-                error: new Error('My message'),
-                release: 'project@version1',
-                level: SentryEvent.LEVEL_INFO
-            });
-
-            expect(result.request.headers).to.deep.equal({
-                header1: 'headervalue1',
-                header2: 'headervalue2'
-            });
-        });
+        expect(requestStub.calledOnce).to.be.true;
+        expect(requestStub.calledWith(request)).to.be.true;
     });
 });
