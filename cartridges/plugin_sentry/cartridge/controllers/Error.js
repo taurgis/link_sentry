@@ -15,7 +15,8 @@ function logError(req, res, next) {
     var error = req.error;
 
     if (error) {
-        var Sentry = require('*/cartridge/scripts/Sentry').init();
+        var Sentry = require('*/cartridge/scripts/Sentry');
+
         Sentry.captureException(new Error(error.errorText));
     }
     next();
@@ -29,7 +30,7 @@ server.prepend('ErrorCode', logError);
  */
 server.prepend('Forbidden', function (req, res, next) {
     if (req.currentCustomer.profile) {
-        var Sentry = require('*/cartridge/scripts/Sentry').init();
+        var Sentry = require('*/cartridge/scripts/Sentry');
         var message = 'Forbidden access for customer ' + req.currentCustomer.profile.customerNo;
 
         Sentry.captureException(new Error(message));
