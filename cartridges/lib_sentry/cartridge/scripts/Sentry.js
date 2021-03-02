@@ -7,6 +7,7 @@ var {
     sendEvent, getLastEventID, getDSN, getProjectName
 } = require('*/cartridge/scripts/helpers/sentryHelper');
 var SentryConfig = require('*/cartridge/config/sentry');
+
 var BEFORE_SEND_HOOK = 'com.sentry.beforesend';
 var DEFAULT_OPTIONS = new SentryOptions({
     dsn: getDSN(),
@@ -67,6 +68,12 @@ Sentry.prototype.init = function (sentryOptions) {
     return this;
 };
 
+/**
+ * Captures the message.
+ *
+ * @param {string} message - The message to send.
+ * @return {SentryId} - The Id (SentryId object) of the event
+ */
 Sentry.prototype.captureMessage = function (message) {
     if (!this.initialized) {
         this.init(DEFAULT_OPTIONS);
@@ -79,14 +86,14 @@ Sentry.prototype.captureMessage = function (message) {
         level: SentryEvent.LEVEL_INFO
     });
 
-    sendEvent(sentryEvent, this.options.dsn);
+    return sendEvent(sentryEvent, this.options.dsn);
 };
 
 /**
  * Captures an exception event and sends it to Sentry.
  *
- * @param {Error} error An exception-like object.
- * @returns {string|null} The event id
+ * @param {Error} error - An exception-like object.
+ * @returns {SentryId|null} - The event id
  */
 Sentry.prototype.captureException = function (error) {
     if (!this.initialized) {

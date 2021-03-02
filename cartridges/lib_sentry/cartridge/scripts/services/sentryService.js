@@ -35,9 +35,10 @@ function sentryEventService(sentryEvent, dsn) {
         parseResponse: function (svc, client) {
             try {
                 if (client.statusCode === 200) {
+                    var SentryId = require('*/cartridge/models/SentryId');
                     Logger.debug('Sentry :: Sentry successfully processed our request.');
 
-                    return JSON.parse(client.text).id;
+                    return new SentryId(JSON.parse(client.text).id);
                 }
             } catch (e) {
                 Logger.error(e);
