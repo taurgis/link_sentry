@@ -6,6 +6,25 @@ var PROJECT_NAME_PREFERENCE = 'sentryProjectID';
 var COOKIES_PREFERENCE = 'sentryCookiesEnabled';
 
 /**
+ * Fetches a Site Preference, if it has been cached fetch it from the cache.
+ * @param {string} key - The key of the Site Preference
+ * @return {Object} - The Site Preference
+ */
+function getCachedPreference(key) {
+    var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
+
+    Logger.debug('Sentry :: Fetching {0}.', key);
+
+    return configCache.get(key, function () {
+        var currentSite = require('dw/system/Site').getCurrent();
+
+        Logger.debug('Sentry :: Fetching {0} from the Site Preference.', key);
+
+        return currentSite.getCustomPreferenceValue(key);
+    });
+}
+
+/**
  * Stores a Sentry ID in the cache.
  * @param {string} id - The Event ID
  */
@@ -41,17 +60,7 @@ function getLastEventID() {
  * @return {string|Object} - The DSN URL
  */
 function getDSN() {
-    var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
-
-    Logger.debug('Sentry :: Fetching DSN.');
-
-    return configCache.get('DSN', function () {
-        var currentSite = require('dw/system/Site').getCurrent();
-
-        Logger.debug('Sentry :: Fetching DSN from the Site Preference.');
-
-        return currentSite.getCustomPreferenceValue(DSN_PREFERENCE);
-    });
+    return getCachedPreference(DSN_PREFERENCE);
 }
 
 /**
@@ -60,17 +69,7 @@ function getDSN() {
  * @return {string|Object} - The DSN URL
  */
 function getCookiesAllowed() {
-    var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
-
-    Logger.debug('Sentry :: Fetching Cookies Preference.');
-
-    return configCache.get('cookiesEnabled', function () {
-        var currentSite = require('dw/system/Site').getCurrent();
-
-        Logger.debug('Sentry :: Fetching if cookies are allowed from the Site Preference.');
-
-        return currentSite.getCustomPreferenceValue(COOKIES_PREFERENCE);
-    });
+    return getCachedPreference(COOKIES_PREFERENCE);
 }
 
 /**
@@ -80,17 +79,7 @@ function getCookiesAllowed() {
  * @return {string|Object} - The project ID
  */
 function getProjectName() {
-    var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
-
-    Logger.debug('Sentry :: Fetching Project Name.');
-
-    return configCache.get('projectName', function () {
-        var currentSite = require('dw/system/Site').getCurrent();
-
-        Logger.debug('Sentry :: Fetching Project Name from the Site Preference.');
-
-        return currentSite.getCustomPreferenceValue(PROJECT_NAME_PREFERENCE);
-    });
+    return getCachedPreference(PROJECT_NAME_PREFERENCE);
 }
 
 /**

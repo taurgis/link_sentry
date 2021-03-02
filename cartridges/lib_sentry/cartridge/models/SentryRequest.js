@@ -9,6 +9,10 @@ var { forEach } = require('*/cartridge/scripts/util/collections');
  * @return {Object} - The headers as an object (key - value)
  */
 function getHeaders(request) {
+    if (!request) {
+        return null;
+    }
+
     var headers = {};
 
     if (request.httpHeaders) {
