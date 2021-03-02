@@ -23,27 +23,28 @@ var DEFAULT_OPTIONS = new SentryOptions({
  * @example
  * ```
  *
- * var { init } = require('*\/cartridge/scripts/Sentry');
+ * var Sentry = require('*\/cartridge/scripts/Sentry');
  *
- * init();
+ * Sentry.init();
+ * Sentry.captureException(new Error('Good bye'));
  * ```
  *
  *
  * @example
  * ```
+ * var Sentry = require('*\/cartridge/scripts/Sentry');
  *
- * var { init } = require('*\/cartridge/scripts/Sentry');
- *
- * init({
+ * Sentry.init({
  *   dsn: '__DSN__',
  *   // ...
  * });
+ *
+ * Sentry.captureException(new Error('Good bye'));
  * ```
  *
  * @example
  * ```
- *
- * var { init } = require('*\/cartridge/scripts/Sentry');
+ * var Sentry = require('*\/cartridge/scripts/Sentry');
  * Sentry.captureMessage('Hello, world!');
  * Sentry.captureException(new Error('Good bye'));
  * ```
