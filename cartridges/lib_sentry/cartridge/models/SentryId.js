@@ -17,7 +17,7 @@ function generateSentryUUID() {
  */
 function SentryId(uuid) {
     if (uuid && uuid.length !== 32) {
-        throw new Error('UUID needs to be 32 characters long.');
+        throw new Error('UUID needs to be 32 characters long. Was given the value ' + uuid);
     }
 
     this.uuid = uuid || generateSentryUUID();

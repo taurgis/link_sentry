@@ -1,7 +1,6 @@
 'use strict';
 
 var SentryEvent = require('*/cartridge/models/SentryEvent');
-var SentryId = require('*/cartridge/models/SentryId');
 var SentryOptions = require('*/cartridge/models/SentryOptions');
 var {
     sendEvent, getLastEventID, getDSN, getProjectName
@@ -139,7 +138,7 @@ Sentry.prototype.getLastEventID = function () {
     var lastEventId = getLastEventID();
 
     if (lastEventId) {
-        return new SentryId(lastEventId);
+        return lastEventId;
     }
 
     return null;
