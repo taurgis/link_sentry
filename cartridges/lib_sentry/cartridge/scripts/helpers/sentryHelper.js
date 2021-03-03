@@ -1,6 +1,8 @@
 'use strict';
 
 var Logger = require('dw/system/Logger').getLogger('sentry');
+var SentryId = require('*/cartridge/models/SentryId');
+
 var DSN_PREFERENCE = 'sentryDSN';
 var PROJECT_NAME_PREFERENCE = 'sentryProjectID';
 var COOKIES_PREFERENCE = 'sentryCookiesEnabled';
@@ -26,10 +28,10 @@ function getCachedPreference(key) {
 
 /**
  * Stores a Sentry ID in the cache.
- * @param {string} id - The Event ID
+ * @param {SentryId} sentryId - The Sentry ID
  */
-function storeEventID(id) {
-    if (empty(id)) {
+function storeEventID(sentryId) {
+    if (!sentryId) {
         return;
     }
 
@@ -37,12 +39,12 @@ function storeEventID(id) {
     var key = request.session.sessionID + 'lastEventID';
     Logger.debug('Sentry :: Storing last Event ID in cache under key {0}.', key);
 
-    configCache.put(key, id);
+    configCache.put(key, sentryId.uuid);
 }
 
 /**
  * Gets the last known event ID from the cache.
- * @return {string|Object|null} - The Event ID
+ * @return {SentryId} - The Sentry ID
  */
 function getLastEventID() {
     var configCache = require('dw/system/CacheMgr').getCache('sentryConfig');
@@ -50,7 +52,16 @@ function getLastEventID() {
 
     Logger.debug('Sentry :: Fetching last Event ID in cache under key {0}.', key);
 
-    return configCache.get(request.session.sessionID + 'lastEventID');
+    /**
+     * @type {string}
+     */
+    var result = configCache.get(request.session.sessionID + 'lastEventID');
+
+    if (result) {
+        return new SentryId(result);
+    }
+
+    return null;
 }
 
 /**
@@ -128,7 +139,7 @@ function canSendEvent() {
  * @param {Object} sentryEvent - The Sentry Event to send
  * @param {string} dsn - The DSN to use
  *
- * @returns {string|null} - The Sentry Event ID
+ * @returns {SentryId} - The Sentry Event ID
  */
 function sendEvent(sentryEvent, dsn) {
     if (!empty(sentryEvent) && canSendEvent()) {
@@ -164,7 +175,9 @@ function sendEvent(sentryEvent, dsn) {
                 blockSendingEvents(Number(180));
             }
 
-            return result.errorMessage;
+            Logger.debug('Sentry :: Sentry received error {0}.', result.errorMessage);
+
+            return null;
         }
     }
 

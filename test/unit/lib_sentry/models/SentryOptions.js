@@ -8,14 +8,10 @@ require('app-module-path').addPath(process.cwd() + '/cartridges');
 
 const defaultDSN = 'xxxxxxxxxxxxxXxxxxxxxxxxxx';
 const defaultProject = 'project';
+const defaultRelease = defaultProject + '@1.0.0';
 const loggerSpy = sinon.spy();
 
 var SentryOptions = proxyQuire('lib_sentry/cartridge/models/SentryOptions', {
-    '*/cartridge/scripts/helpers/sentryHelper': {
-        getDSN: () => defaultDSN,
-        getProjectName: () => defaultProject
-    },
-    '*/cartridge/config/sentry': require('lib_sentry/cartridge/config/sentry'),
     '*/cartridge/scripts/processors/duplicateEventProcessor': function () { },
     '*/cartridge/scripts/processors/cookieProcessor': function () { },
     'dw/system/Logger': {
@@ -24,21 +20,12 @@ var SentryOptions = proxyQuire('lib_sentry/cartridge/models/SentryOptions', {
 });
 
 describe('Model - Sentry Options', () => {
-    it('Should fall back to the default if no options are passed.', () => {
-        var result = new SentryOptions();
-
-        expect(result.dsn).to.equal(defaultDSN);
-        expect(result.release).to.include(defaultProject);
-        expect(result.eventProcessors).to.be.length(2);
-        expect(loggerSpy.calledOnce).to.be.true;
-        expect(loggerSpy.calledWith('sentry')).to.be.true;
-    });
-
     it('Should use the DSN provided in the passed config.', () => {
         const dsn = 'my_dsn';
 
         var result = new SentryOptions({
-            dsn
+            dsn,
+            release: defaultRelease
         });
 
         expect(result.dsn).to.equal(dsn);
@@ -48,6 +35,7 @@ describe('Model - Sentry Options', () => {
         const release = 'my_release';
 
         var result = new SentryOptions({
+            dsn: defaultDSN,
             release
         });
 
@@ -57,7 +45,10 @@ describe('Model - Sentry Options', () => {
     it('Should be possible to register a custom event processor.', () => {
         var eventProcessor = sinon.spy();
 
-        var result = new SentryOptions();
+        var result = new SentryOptions({
+            dsn: defaultDSN,
+            release: defaultRelease
+        });
         result.addEventProcessor(eventProcessor);
 
         expect(result.eventProcessors).to.be.length(3);
@@ -66,13 +57,19 @@ describe('Model - Sentry Options', () => {
     });
 
     it('Should be possible to get all event processors.', () => {
-        var result = new SentryOptions();
+        var result = new SentryOptions({
+            dsn: defaultDSN,
+            release: defaultProject
+        });
 
         expect(result.getEventProcessors()).to.be.length(2);
     });
 
     it('Should be possible to override the logger.', () => {
-        var result = new SentryOptions();
+        var result = new SentryOptions({
+            dsn: defaultDSN,
+            release: defaultRelease
+        });
         var customLogger = {
             debug: function () {}
         };
@@ -82,7 +79,10 @@ describe('Model - Sentry Options', () => {
     });
 
     it('Should not be possible to override the logger with something that is not a logger.', () => {
-        var result = new SentryOptions();
+        var result = new SentryOptions({
+            dsn: defaultDSN,
+            release: defaultRelease
+        });
         var customLogger = {};
         result.setLogger(customLogger);
 
@@ -90,7 +90,10 @@ describe('Model - Sentry Options', () => {
     });
 
     it('Should be possible to get the logger.', () => {
-        var result = new SentryOptions();
+        var result = new SentryOptions({
+            dsn: defaultDSN,
+            release: defaultRelease
+        });
         var customLogger = {
             debug: function () {}
         };
