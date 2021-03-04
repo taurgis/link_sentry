@@ -50,7 +50,7 @@ describe('Sentry', () => {
         expect(Sentry.options).to.not.be.null;
     });
 
-    it('Should fall back to default options if no options are passed.', () => {
+    it('Should use the passed options to initialize Sentry.', () => {
         const dummyOptions = {
             dsn: 'my_dsn'
         };
@@ -59,6 +59,20 @@ describe('Sentry', () => {
 
         expect(sentryOptionsStub.calledTwice).to.be.true;
         expect(sentryOptionsStub.calledWithExactly(dummyOptions)).to.be.true;
+    });
+
+    it('Should be able to get the options.', () => {
+        const dummyOptions = {
+            dsn: 'my_dsn'
+        };
+
+        Sentry.init(dummyOptions);
+        expect(sentryOptionsStub.calledWithExactly(dummyOptions)).to.be.true;
+        expect(Sentry.getOptions()).to.not.be.null;
+    });
+
+    it('Should return the default options if Sentry has not been initizalized.', () => {
+        expect(Sentry.getOptions()).to.not.be.null;
     });
 
     describe('SentryEvent - CaptureException', () => {
