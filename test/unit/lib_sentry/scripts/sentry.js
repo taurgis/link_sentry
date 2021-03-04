@@ -48,6 +48,7 @@ describe('Sentry', () => {
 
         expect(sentryOptionsStub.calledOnce).to.be.true;
         expect(Sentry.options).to.not.be.null;
+        expect(Sentry.options).to.not.be.undefined;
     });
 
     it('Should use the passed options to initialize Sentry.', () => {
@@ -68,10 +69,12 @@ describe('Sentry', () => {
 
         Sentry.init(dummyOptions);
         expect(sentryOptionsStub.calledWithExactly(dummyOptions)).to.be.true;
+        expect(Sentry.getOptions()).to.not.be.undefined;
         expect(Sentry.getOptions()).to.not.be.null;
     });
 
     it('Should return the default options if Sentry has not been initizalized.', () => {
+        expect(Sentry.getOptions()).to.not.be.undefined;
         expect(Sentry.getOptions()).to.not.be.null;
     });
 
