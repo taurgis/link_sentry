@@ -67,6 +67,14 @@ Sentry.prototype.init = function (sentryOptions) {
     return this;
 };
 
+Sentry.prototype.getOptions = function () {
+    if (!this.initialized) {
+        this.init(DEFAULT_OPTIONS);
+    }
+
+    return this.options;
+};
+
 /**
  * Captures the message.
  *
