@@ -101,6 +101,8 @@ describe('Sentry', () => {
                 release: '5.3.0',
                 level: undefined // because of the stubbing
             }))).to.be.true;
+
+            expect(sendEventStub.calledOnce).to.be.true;
         });
 
         it('Should process the created event with all registered processors.', () => {
@@ -132,6 +134,49 @@ describe('Sentry', () => {
 
             expect(hasHookStub.calledOnce).to.be.true;
             expect(callHookStub.calledOnce).to.be.true;
+        });
+    });
+
+    describe('SentryEvent - captureMessage', () => {
+        beforeEach(() => {
+            Sentry = proxyQuire('lib_sentry/cartridge/scripts/Sentry', {
+                '*/cartridge/models/SentryEvent': sentryEventStub,
+                '*/cartridge/models/SentryOptions': function () {
+                    this.getEventProcessors = eventProcessorsStub;
+                    this.release = '5.3.0';
+                },
+                '*/cartridge/scripts/helpers/sentryHelper': {
+                    getDSN: () => 'DSN',
+                    getProjectName: () => 'ProjectID',
+                    sendEvent: sendEventStub
+                },
+                '*/cartridge/config/sentry': require('lib_sentry/cartridge/config/sentry'),
+                'dw/system/HookMgr': {
+                    hasHook: hasHookStub,
+                    callHook: callHookStub
+                }
+            });
+        });
+
+        it('Should initialize Sentry with the default options if it has not been initialized.', () => {
+            Sentry.captureMessage('My Message');
+
+            expect(Sentry.initialized).to.be.true;
+        });
+
+        it('Should create the sentry event based on the error.', () => {
+            const dummyMessage = 'My message';
+
+            Sentry.captureMessage(dummyMessage);
+
+            expect(sentryEventStub.calledWith(sinon.match({
+                eventType: undefined, // because of the stubbing
+                release: '5.3.0',
+                message: dummyMessage,
+                level: undefined // because of the stubbing
+            }))).to.be.true;
+
+            expect(sendEventStub.calledOnce).to.be.true;
         });
     });
 });
