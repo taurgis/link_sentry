@@ -15,7 +15,9 @@ function logError(req, res, next) {
     var error = req.error;
 
     if (error) {
-        var Sentry = require('*/cartridge/scripts/Sentry');
+        var BasketProcessor = require('*/cartridge/scripts/processors/basketProcessor');
+        var Sentry = require('*/cartridge/scripts/Sentry').init();
+        Sentry.options.addEventProcessor(BasketProcessor);
 
         Sentry.captureException(new Error(error.errorText));
     }
