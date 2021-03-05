@@ -106,6 +106,7 @@ of your own.
 
 
 ```
+var BasketProcessor = require('*/cartridge/scripts/processors/basketProcessor');
 var Sentry = require('*/cartridge/scripts/Sentry');
 Sentry.getOptions().addEventProcessor(BasketProcessor);
 
