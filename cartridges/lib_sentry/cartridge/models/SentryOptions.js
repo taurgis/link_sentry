@@ -19,10 +19,10 @@ function SentryOptions(config) {
 /**
  * Adds an event processor
  *
- * @param {Object} eventProcessor - The event processor
+ * @param {Object} EventProcessor - The event processor
  */
-SentryOptions.prototype.addEventProcessor = function (eventProcessor) {
-    this.eventProcessors.push(eventProcessor(this));
+SentryOptions.prototype.addEventProcessor = function (EventProcessor) {
+    this.eventProcessors.push(new EventProcessor(this));
 };
 
 /**

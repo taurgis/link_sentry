@@ -68,6 +68,19 @@ Sentry.prototype.init = function (sentryOptions) {
 };
 
 /**
+ * Returns the options of the Sentry instance. If not initialized, the default options will be used.
+ *
+ * @return {SentryOptions} - The current options
+ */
+Sentry.prototype.getOptions = function () {
+    if (!this.initialized) {
+        this.init(DEFAULT_OPTIONS);
+    }
+
+    return this.options;
+};
+
+/**
  * Captures the message.
  *
  * @param {string} message - The message to send.
