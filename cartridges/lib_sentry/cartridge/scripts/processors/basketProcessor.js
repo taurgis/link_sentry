@@ -36,6 +36,8 @@ BasketProcessor.prototype.process = function (sentryEvent) {
     if (currentBasket && currentSentryEvent && currentSentryEvent.user) {
         var { map } = require('*/cartridge/scripts/util/collections');
 
+        this.options.logger.debug('Sentry :: Setting basket information on event.');
+
         currentSentryEvent.user.basket_products = map(currentBasket.productLineItems, function (productLineItem) {
             return productLineItem.productName + ' (' + productLineItem.productID + ')';
         }).join(', ');
