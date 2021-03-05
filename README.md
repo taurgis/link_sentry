@@ -99,6 +99,19 @@ Sentry.init({
 Sentry.captureException(new Error('Good bye'));
 ```
 
+## Custom Processors
+It is possible to hook in your own custom processors (event extenders) without having to overwrite the entire 
+codebase. e.g. you could create a generic helper function to add some default processors
+of your own.
+
+
+```
+var Sentry = require('*/cartridge/scripts/Sentry');
+Sentry.getOptions().addEventProcessor(BasketProcessor);
+
+Sentry.captureException(new Error('Good bye'));
+```
+
 # Release management
 
 # NPM scripts
