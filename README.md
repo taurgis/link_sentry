@@ -48,9 +48,30 @@ configuration can be imported in the business manager. The file is located here 
 A few preferences are added to the `Site Preferences` system object. The file `metadata/site-preferences.xml` can be 
 imported as a System Object Type in the business manager.
 
-#Usage
+# Usage
 
 ## Initialization
+
+Using the default configuration (Site Preferences)
+
+```
+var Sentry = require('*/cartridge/scripts/Sentry');
+Sentry.captureMessage('Hello, world!');
+Sentry.captureException(new Error('Good bye'));
+```
+
+Using your own configuration, ignoring Site Preferences
+
+```
+var Sentry = require('*\/cartridge/scripts/Sentry');
+
+Sentry.init({
+   dsn: '__DSN__',
+   // ...
+});
+
+Sentry.captureException(new Error('Good bye'));
+```
 
 ## Hooks
 
@@ -76,29 +97,6 @@ module.exports = {
 
 Never used hooks before? Look at the documentation [here](https://documentation.b2c.commercecloud.salesforce.com/DOC1/topic/com.demandware.dochelp/content/b2c_commerce/topics/sfra/b2c_sfra_hooks.html?resultof=%22%68%6f%6f%6b%73%22%20%22%68%6f%6f%6b%22%20).
 
-# Usage
-
-Using the default configuration (Site Preferences)
-
-```
-var Sentry = require('*/cartridge/scripts/Sentry');
-Sentry.captureMessage('Hello, world!');
-Sentry.captureException(new Error('Good bye'));
-```
-
-Using your own configuration, ignoring Site Preferences
-
-```
-var Sentry = require('*\/cartridge/scripts/Sentry');
-
-Sentry.init({
-   dsn: '__DSN__',
-   // ...
-});
-
-Sentry.captureException(new Error('Good bye'));
-```
-
 ## Custom Processors
 It is possible to hook in your own custom processors (event extenders) without having to overwrite the entire 
 codebase. e.g. you could create a generic helper function to add some default processors
@@ -106,6 +104,7 @@ of your own.
 
 
 ```
+var BasketProcessor = require('*/cartridge/scripts/processors/basketProcessor');
 var Sentry = require('*/cartridge/scripts/Sentry');
 Sentry.getOptions().addEventProcessor(BasketProcessor);
 
