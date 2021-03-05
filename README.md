@@ -48,7 +48,7 @@ configuration can be imported in the business manager. The file is located here 
 A few preferences are added to the `Site Preferences` system object. The file `metadata/site-preferences.xml` can be 
 imported as a System Object Type in the business manager.
 
-#Usage
+# Usage
 
 ## Initialization
 
