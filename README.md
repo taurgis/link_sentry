@@ -67,8 +67,6 @@ To make sure bugs can be related to releases in Sentry, make sure you keep the `
 
 ## Initialization
 
-
-
 Using the default configuration (Site Preferences)
 
 ```
