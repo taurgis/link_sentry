@@ -196,4 +196,64 @@ describe('Sentry', () => {
             expect(sendEventStub.calledOnce).to.be.true;
         });
     });
+
+    describe('SentryEvent - captureEvent', () => {
+        beforeEach(() => {
+            Sentry = proxyQuire('lib_sentry/cartridge/scripts/Sentry', {
+                '*/cartridge/models/SentryEvent': sentryEventStub,
+                '*/cartridge/models/SentryOptions': function () {
+                    this.getEventProcessors = eventProcessorsStub;
+                    this.release = '5.3.0';
+                },
+                '*/cartridge/scripts/helpers/sentryHelper': {
+                    getDSN: () => 'DSN',
+                    getProjectName: () => 'ProjectID',
+                    sendEvent: sendEventStub
+                },
+                '*/cartridge/config/sentry': require('lib_sentry/cartridge/config/sentry'),
+                'dw/system/HookMgr': {
+                    hasHook: hasHookStub,
+                    callHook: callHookStub
+                }
+            });
+        });
+
+        it('Should initialize Sentry with the default options if it has not been initialized.', () => {
+            eventProcessorsStub.returns([]);
+            Sentry.captureEvent(sentryEventStub);
+
+            expect(Sentry.initialized).to.be.true;
+        });
+
+        it('Should process the passed event with all registered processors.', () => {
+            const dummyProcessor = {
+                process: sinon.stub()
+            };
+            eventProcessorsStub.returns([dummyProcessor]);
+
+            Sentry.captureEvent(sentryEventStub);
+
+            expect(dummyProcessor.process.calledOnce).to.be.true;
+        });
+
+        it('Should not call the beforeSend hook if no hook has been registered.', () => {
+            eventProcessorsStub.returns([]);
+            hasHookStub.returns(false);
+
+            Sentry.captureEvent(sentryEventStub);
+
+            expect(hasHookStub.calledOnce).to.be.true;
+            expect(callHookStub.calledOnce).to.be.false;
+        });
+
+        it('Should call the beforeSend hook if a hook has been registered.', () => {
+            eventProcessorsStub.returns([]);
+            hasHookStub.returns(true);
+
+            Sentry.captureEvent(sentryEventStub);
+
+            expect(hasHookStub.calledOnce).to.be.true;
+            expect(callHookStub.calledOnce).to.be.true;
+        });
+    });
 });
