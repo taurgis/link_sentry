@@ -14,6 +14,39 @@ var DEFAULT_OPTIONS = new SentryOptions({
 });
 
 /**
+ * Processes and preprocesses the SentryEvent before it is sent to Sentry
+ * @param {SentryEvent} sentryEvent - The Sentry Event
+ *
+ * @return {SentryId|null} - The Sentry Event ID
+ */
+function processEventCall(sentryEvent) {
+    var currentSentryEvent = sentryEvent;
+
+    this.options.getEventProcessors()
+        .forEach(function (eventProcessor) {
+            if (currentSentryEvent) {
+                currentSentryEvent = eventProcessor.process(currentSentryEvent);
+            }
+        });
+
+    if (currentSentryEvent) {
+        var { hasHook, callHook } = require('dw/system/HookMgr');
+
+        if (hasHook(BEFORE_SEND_HOOK)) {
+            currentSentryEvent = callHook(BEFORE_SEND_HOOK, 'beforeSend', currentSentryEvent);
+
+            if (!currentSentryEvent) {
+                return null;
+            }
+        }
+
+        return sendEvent(currentSentryEvent, this.options.dsn);
+    }
+
+    return null;
+}
+
+/**
  * The Sentry SFCC SDK Client.
  *
  * To use this SDK, call the {@link init} function as early as possible in the
@@ -47,6 +80,10 @@ var DEFAULT_OPTIONS = new SentryOptions({
  * var Sentry = require('*\/cartridge/scripts/Sentry');
  * Sentry.captureMessage('Hello, world!');
  * Sentry.captureException(new Error('Good bye'));
+ * Sentry.captureEvent(new SentryEvent({
+ *     message: 'Manual',
+ *     // ...
+ * });
  * ```
  */
 function Sentry() {
@@ -119,27 +156,21 @@ Sentry.prototype.captureException = function (error) {
         level: SentryEvent.LEVEL_ERROR
     });
 
-    this.options.getEventProcessors().forEach(function (eventProcessor) {
-        if (sentryEvent) {
-            sentryEvent = eventProcessor.process(sentryEvent);
-        }
-    });
+    return processEventCall.call(this, sentryEvent);
+};
 
-    if (sentryEvent) {
-        var { hasHook, callHook } = require('dw/system/HookMgr');
-
-        if (hasHook(BEFORE_SEND_HOOK)) {
-            sentryEvent = callHook(BEFORE_SEND_HOOK, 'beforeSend', sentryEvent);
-
-            if (!sentryEvent) {
-                return null;
-            }
-        }
-
-        return sendEvent(sentryEvent, this.options.dsn);
+/**
+ * Captures the event.
+ *
+ * @param {SentryEvent} sentryEvent - the event
+ * @returns {SentryId} - The Id (SentryId object) of the event
+ */
+Sentry.prototype.captureEvent = function (sentryEvent) {
+    if (!this.initialized) {
+        this.init(DEFAULT_OPTIONS);
     }
 
-    return null;
+    return processEventCall.call(this, sentryEvent);
 };
 
 /**
