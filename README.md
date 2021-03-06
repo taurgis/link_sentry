@@ -50,6 +50,21 @@ imported as a System Object Type in the business manager.
 
 # Usage
 
+## Configuration file
+There is a configuration file located at `lib_sentry/config/sentry.json`.
+
+Example:
+```
+{
+  "code-version": "1.0.0", // This needs to be your unique identifier for releases in Sentry
+  "sentry-client": { //SDK Information, this can remain the same always
+    "name": "SFRA",
+    "version": "5.3.0"
+  }
+}
+```
+To make sure bugs can be related to releases in Sentry, make sure you keep the `code-version` in this file in sync with your releases.
+
 ## Initialization
 
 Using the default configuration (Site Preferences)
