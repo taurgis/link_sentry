@@ -1,6 +1,6 @@
 {
   "name": "plugin_sentry",
-  "version": "5.3.0",
+  "version": "6.0.0",
   "description": "Track SFRA client side exceptions to Sentry, and log server side exceptions optionally.",
   "main": "index.js",
   "scripts": {
