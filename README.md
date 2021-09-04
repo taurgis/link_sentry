@@ -4,7 +4,7 @@ This is the repository for the link_sentry plugin. This plugin adds Sentry Monit
 the following capabilities:
 
 * Client Side error reporting
-* Server Side error reporting
+* Server-Side error reporting
 * Optional library functions to log custom errors to sentry
 
 # Cartridge Path Considerations
@@ -41,12 +41,28 @@ see [Get Started with SFRA](https://documentation.b2c.commercecloud.salesforce.c
 #Metadata
 
 ## Services
-To contact Sentry it is required to configure a service (without credentials). A file containing the required 
-configuration can be imported in the business manager. The file is located here `metadata/services.xml`.
+To contact Sentry it is required to configure a service (without credentials). You can import a file containing the required configuration in the business manager. The file is located here `metadata/services.xml`.
+
+Other than importing these services, no configuration is required.
 
 ## Site Preferences
 A few preferences are added to the `Site Preferences` system object. The file `metadata/site-preferences.xml` can be 
 imported as a System Object Type in the business manager.
+
+### Configuration of the Site Preferences
+
+#### Public Key (DSN)
+This value can be found in your project configuration in Sentry at:
+
+`Project > SDK SETUP > Client Keys (DSN)`
+
+#### Project ID (Name)
+This value can be found in your project configuration in Sentry at:
+
+`Project > General Settings`
+
+#### Cookie Tracking Enabled
+You can enable or disable the adding of cookies to the Sentry Events sent by the server-side code.
 
 # Usage
 
