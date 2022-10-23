@@ -1,7 +1,7 @@
 {
-  "code-version": "6.0.0",
+  "code-version": "6.2.0",
   "sentry-client": {
     "name": "SFRA",
-    "version": "6.0.0"
+    "version": "6.2.0"
   }
 }
