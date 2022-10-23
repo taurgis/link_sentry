@@ -125,8 +125,12 @@ function canSendEvent() {
     if (retryAfter) {
         var currentDateTime = Date.now();
 
-        Logger.debug('Sentry :: Recently had a Retry-After header, which was set until {0}. Current Time is {1}, so result is {2}.',
-            new Date(retryAfter), new Date(currentDateTime), currentDateTime > retryAfter);
+        Logger.debug(
+            'Sentry :: Recently had a Retry-After header, which was set until {0}. Current Time is {1}, so result is {2}.',
+            new Date(retryAfter),
+            new Date(currentDateTime),
+            currentDateTime > retryAfter
+        );
 
         return currentDateTime > retryAfter;
     }
